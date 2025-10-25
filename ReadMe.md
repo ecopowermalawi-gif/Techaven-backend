@@ -1,7 +1,236 @@
-# TechHaven E-commerce Platform - Database Documentation
+# TechHaven E-commerce Platform
 
 ## Overview
-TechHaven's database is structured using a domain-driven design approach, with tables organized into distinct service boundaries. The schema uses MySQL/MariaDB with InnoDB engine and utf8mb4 character set.
+TechHaven is a comprehensive e-commerce platform built with Node.js, Express, and MySQL. This repository contains the backend API that powers the platform.
+
+## Technical Stack
+- **Runtime**: Node.js v20.x
+- **Framework**: Express.js
+- **Database**: MySQL 8.0 (InnoDB, utf8mb4)
+- **Authentication**: JWT
+- **File Storage**: Local/S3
+- **Payment**: Stripe/Local Payment Integration
+
+## Getting Started
+
+### Prerequisites
+- Node.js v20.x or higher
+- MySQL 8.0 or higher
+- npm or yarn
+
+### Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/ecopowermalawi-gif/Techaven-backend.git
+cd Techaven-backend
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Set up environment variables:
+```bash
+cp .env.example .env
+# Edit .env with your database credentials and other settings
+```
+
+4. Run migrations:
+```bash
+npm run migrate
+```
+
+5. Start the development server:
+```bash
+npm run dev
+```
+
+## API Documentation
+
+### Base URL
+```
+http://localhost:3000/api
+```
+
+### Authentication
+Most routes require authentication via JWT token. Include the token in the Authorization header:
+```
+Authorization: Bearer your-jwt-token
+```
+
+### Available Routes
+
+#### 1. Authentication & User Management
+```http
+# Public Routes
+POST /auth/register
+{
+  "email": "john@gmail.com",
+  "password": "secure123",
+  "username": "john1347"
+}
+
+POST /auth/login
+{
+  "email": "john@gmail.com",
+  "password": "secure123"
+}
+
+# Protected Routes
+GET /users/me                 # Get current user profile
+GET /users                    # List users (Admin only)
+PUT /users/profile           # Update profile
+PUT /users/password         # Change password
+```
+
+Example Response:
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "4620dcf0-6607-4e06-b43e-ba4126112132",
+      "email": "kk@g.com",
+      "username": "hkg",
+      "created_at": "2025-10-24T10:49:18.000Z",
+      "updated_at": null,
+      "is_active": 1,
+      "roles": "admin",
+      "full_name": null,
+      "phone": null
+    },
+    {
+      "id": "df14e8ce-2fb5-423d-a0b4-467f45e1bf09",
+      "email": "john@gmail.com",
+      "username": "john1347",
+      "created_at": "2025-10-24T13:42:10.000Z",
+      "is_active": 1
+    }
+  ]
+}
+```
+
+#### 2. Product Management
+```http
+# Public Routes
+GET /products                # List all products
+GET /products/search        # Search products
+GET /products/:id           # Get single product
+
+# Protected Routes (Admin)
+POST /products             # Create product
+{
+  "title": "iPhone 15 Pro",
+  "description": "Latest iPhone model",
+  "price": 999.99,
+  "stock": 100,
+  "category_id": 1
+}
+
+PUT /products/:id          # Update product
+DELETE /products/:id       # Delete product
+```
+
+#### 3. Shop Management
+```http
+# Public Routes
+GET /shops                 # List all shops
+GET /shops/:id            # Get single shop
+
+# Protected Routes
+POST /shops               # Create a shop
+{
+  "name": "Tech Store",
+  "description": "Best tech deals",
+  "category": "Electronics",
+  "address": "123 Tech St"
+}
+
+PUT /shops/:id           # Update shop
+DELETE /shops/:id        # Delete shop
+```
+
+#### 4. Order Management
+```http
+# Protected Routes
+GET /orders              # List user's orders
+POST /orders             # Create order
+{
+  "items": [
+    {
+      "product_id": "product-uuid",
+      "quantity": 2
+    }
+  ],
+  "shipping_address_id": "address-uuid"
+}
+
+GET /orders/:id         # Get order details
+PUT /orders/:id/status  # Update order status
+```
+
+#### 5. Payment Integration
+```http
+# Protected Routes
+POST /payments/intent   # Create payment intent
+{
+  "amount": 999.99,
+  "currency": "usd",
+  "orderId": "order-uuid"
+}
+
+POST /payments/confirm  # Confirm payment
+GET /payments/methods   # List payment methods
+```
+
+### Testing the API
+
+1. Create a test user:
+```bash
+curl -X POST http://localhost:3000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "password": "password123",
+    "username": "testuser"
+  }'
+```
+
+2. Login to get JWT token:
+```bash
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "test@example.com",
+    "password": "password123"
+  }'
+```
+
+3. Use the token for protected routes:
+```bash
+curl http://localhost:3000/api/users/me \
+  -H "Authorization: Bearer your-jwt-token"
+```
+
+### Rate Limiting
+The API implements rate limiting:
+- Standard API calls: 100 requests per minute
+- Login attempts: 5 per 15 minutes
+- File uploads: 10 per hour
+
+### Error Responses
+All errors follow this format:
+```json
+{
+  "success": false,
+  "message": "Error description",
+  "errors": [] // Optional validation errors
+}
+```
+
+## Database Documentation
 
 ## Technical Specifications
 - **Engine**: InnoDB
