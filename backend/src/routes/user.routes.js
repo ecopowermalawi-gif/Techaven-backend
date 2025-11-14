@@ -14,7 +14,7 @@ console.log('User route accessed');
 
     })
 
-
+router.get('/users', userController.getAllUsers);
 
 router.post(
     '/register',

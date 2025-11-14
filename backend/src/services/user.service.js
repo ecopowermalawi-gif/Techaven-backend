@@ -119,6 +119,29 @@ class UserService {
         }
     }
 
+       async getAllUsers() {
+        try {
+            const [users] = await pool.query(`
+                SELECT u.*, 
+                       GROUP_CONCAT(DISTINCT r.name) as roles,
+                       up.full_name, up.phone, up.dob, up.locale
+                FROM auth_users u
+                LEFT JOIN auth_users_roles ur ON u.id = ur.user_id
+                LEFT JOIN auth_roles r ON ur.role_id = r.id
+                LEFT JOIN auth_user_profile up ON u.id = up.user_id
+                GROUP BY u.id
+            `, []);
+
+        
+
+           
+
+            return users;
+        } catch (error) {
+            throw new Error('Failed to fetch user');
+        }
+    }
+
     async updateUserProfile(userId, data) {
         try {
             const [result] = await pool.query(`

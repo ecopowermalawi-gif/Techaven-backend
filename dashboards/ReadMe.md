@@ -1,1 +1,1 @@
-for admin and sho owners dashboards
+for admin and shop owners dashboards

@@ -44,6 +44,29 @@ class UserController {
         }
     }
 
+     async getAllUsers(req, res) {
+        try {
+            
+            const users = await userService.getAllUsers();
+            if (!users) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Users not found'
+                });
+            }
+            res.json({
+                success: true,
+                data: users
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Failed to fetch users'
+            });
+        }
+    }
+
+
     async getProfile(req, res) {
         try {
             const userId = req.user.id;
