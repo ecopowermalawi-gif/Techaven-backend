@@ -8,7 +8,7 @@ import shopRoutes from './routes/shop.routes.js';
 
 const app = express();
 
-console.log('Starting server...');
+console.log('Starting Techaven API End Points...');
 
 console.log('Setting up middleware...');
 // Middleware
