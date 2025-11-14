@@ -120,6 +120,7 @@ class UserService {
     }
 
        async getAllUsers() {
+        console.log("Fetching all users");
         try {
             const [users] = await pool.query(`
                 SELECT u.*, 
