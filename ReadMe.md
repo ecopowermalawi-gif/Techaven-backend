@@ -1,1 +1,0 @@
-base url : srv1121569.hstgr.cloud/techaven/techaven-backend/backend/
