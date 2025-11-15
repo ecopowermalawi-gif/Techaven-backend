@@ -8,6 +8,9 @@ class UserService {
         const connection = await pool.getConnection();
         try {
             await connection.beginTransaction();
+console.log("Registering user with email:", email, "and username:", username);  
+
+console.log("Checking if user already exists with email:", email, "or username:", username);    
 
             // Check if user already exists
             const [existingUsers] = await connection.query(
@@ -17,14 +20,21 @@ class UserService {
 
             if (existingUsers.length > 0) {
                 throw new Error('User with this email or username already exists');
-            }
+
+
+console.log("generating salt")            }
 
             // Hash password
             const salt = await bcrypt.genSalt(10);
+
+            console.log("hashing  de password")
             const passwordHash = await bcrypt.hash(password, salt);
 
             // Create user
+
             const userId = uuidv4();
+
+            console.log("user id ", userId)
             await connection.query(
                 'INSERT INTO auth_users (id, email, password_hash, username) VALUES (?, ?, ?, ?)',
                 [userId, email, passwordHash, username]
@@ -36,15 +46,36 @@ class UserService {
                 [userId]
             );
 
-            // //add a user role 
-            // await this.addUserRole(userId, role)
             
+                 // Get role ID
+            const [roles] = await connection.query(
+                'SELECT id FROM auth_roles WHERE name = ?',
+                [role]
+            );
+
+          
+
+            const roleId = roles[0].id;
+
+
+            
+            // Add role to user
+     
+ // Insert the new role
+        await connection.query(
+            'INSERT INTO auth_users_roles (user_id, role_id) VALUES (?, ?)',
+            [userId, roleId]
+        );
+           
             await connection.commit();
+             console.log("commiting the transaction of registering user")
             return userId;
         } catch (error) {
+            console.log("hey dude that didnt work  , Techaven is rolling back")
             await connection.rollback();
             throw error;
         } finally {
+            console.log("done")
             connection.release();
         }
     }
@@ -202,26 +233,39 @@ class UserService {
 
     async addUserRole(userId, roleName) {
         const connection = await pool.getConnection();
+      
         try {
             await connection.beginTransaction();
 
+          
             // Get role ID
             const [roles] = await connection.query(
                 'SELECT id FROM auth_roles WHERE name = ?',
                 [roleName]
             );
 
-            if (roles.length === 0) {
+            if (roles[0].length === 0) {
+              
                 throw new Error('Role not found');
             }
+            
 
+            const roleId = roles[0].id;
+
+
+            
             // Add role to user
-            await connection.query(
-                'INSERT IGNORE INTO auth_users_roles (user_id, role_id) VALUES (?, ?)',
-                [userId, roles[0].id]
-            );
+     
+ // Insert the new role
+        await connection.query(
+            'INSERT INTO auth_users_roles (user_id, role_id) VALUES (?, ?)',
+            [userId, roleId]
+        );
+          
+         
 
             await connection.commit();
+               console.log("Techaven didi it ");
             return true;
         } catch (error) {
             await connection.rollback();

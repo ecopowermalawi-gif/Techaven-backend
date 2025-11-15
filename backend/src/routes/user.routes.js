@@ -10,15 +10,17 @@ const router = express.Router();
 
 router.get('/',(req, res)=>{
     res.send('User route is working');
-console.log('User route accessed');
+
 
     })
 
 router.get('/users', userController.getAllUsers);
+ 
+
 
 router.post(
     '/register',
-    // userValidationRules.register,
+    userValidationRules.register,
     userController.register
 );
 

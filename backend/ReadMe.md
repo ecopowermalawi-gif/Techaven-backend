@@ -1,4 +1,4 @@
-# TechHaven E-commerce Platform
+# TechHaven E-commerce API End Points
 
 ## Overview
 TechHaven is a comprehensive e-commerce platform built with Node.js, Express, and MySQL. This repository contains the backend API that powers the platform.
@@ -51,7 +51,7 @@ npm run dev
 
 ### Base URL
 ```
-http://localhost:3000/api
+http://localhost:666/api
 ```
 
 ### Authentication
@@ -67,15 +67,33 @@ Authorization: Bearer your-jwt-token
 # Public Routes
 POST /auth/register
 {
-  "email": "john@gmail.com",
+  "email": "buyer@gmail.com",
   "password": "secure123",
-  "username": "john1347"
+  "username": "buyer1",
+  "role" : "buyer"
 }
 
 POST /auth/login
 {
-  "email": "john@gmail.com",
-  "password": "secure123"
+  "email": "buyer1@gmail.com",
+  "password": "buyer1"
+}
+
+output
+{
+  "success": true,
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjJkNWRlNWMwLTVhODItNGYxYS1iNzlkLWUxZWM3MDQ1NzQ2YiIsImVtYWlsIjoiYnV5ZXIxQGdtYWlsLmNvbSIsInJvbGVzIjpbImJ1eWVyIl0sImlhdCI6MTc2MzE5NDE4OSwiZXhwIjoxNzYzMjgwNTg5fQ.KbkzgFE5jLrP8WCzUoXvog8BOmSWUU7Tvwrc_b_mYtc",
+    "user": {
+      "id": "2d5de5c0-5a82-4f1a-b79d-e1ec7045746b",
+      "email": "buyer1@gmail.com",
+      "username": "buyer1",
+      "created_at": "2025-11-15T08:06:36.000Z",
+      "updated_at": null,
+      "is_active": 1,
+      "roles": "buyer"
+    }
+  }
 }
 
 # Protected Routes

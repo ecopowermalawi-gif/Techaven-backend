@@ -108,9 +108,8 @@ export const userValidationRules = {
             .isEmail().withMessage('Invalid email address')
             .normalizeEmail(),
         body('password')
-            .isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
-            .matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]/)
-            .withMessage('Password must contain at least one letter and one number'),
+            .isLength({ min: 3 }).withMessage('Password must be at least 6 characters long'),
+          
         body('username')
             .isLength({ min: 3 }).withMessage('Username must be at least 3 characters long')
             .matches(/^[A-Za-z0-9_-]+$/).withMessage('Username can only contain letters, numbers, underscores, and hyphens'),
