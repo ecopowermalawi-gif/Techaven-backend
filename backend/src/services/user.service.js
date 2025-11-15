@@ -18,7 +18,7 @@ console.log("Checking if user already exists with email:", email, "or username:"
                 [email, username]
             );
 
-            if (existingUsers.length > 0) {
+            if (existingUsers[0].length > 0) {
                 throw new Error('User with this email or username already exists');
 
 
@@ -92,7 +92,7 @@ console.log("generating salt")            }
                 GROUP BY u.id
             `, [email]);
 
-            if (users.length === 0) {
+            if (users[0].length === 0) {
                 throw new Error('Invalid credentials');
             }
 
@@ -138,7 +138,7 @@ console.log("generating salt")            }
                 GROUP BY u.id
             `, [id]);
 
-            if (users.length === 0) return null;
+            if (users[0].length === 0) return null;
 
             const user = users[0];
             delete user.password_hash;
@@ -205,7 +205,7 @@ console.log("generating salt")            }
                 [userId]
             );
 
-            if (users.length === 0) {
+            if (users[0].length === 0) {
                 throw new Error('User not found');
             }
 
