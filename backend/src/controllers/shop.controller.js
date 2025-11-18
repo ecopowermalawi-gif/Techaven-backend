@@ -21,6 +21,8 @@ const shopController = {
         try {
             const { shopId } = req.params;
             const shop = await shopService.getShopById(shopId);
+            console.log("shop details ", shop);
+
             if (!shop) {
                 throw new AppError('Shop not found', 404);
             }
@@ -45,15 +47,14 @@ const shopController = {
     // Create new shop
     async createShop(req, res, next) {
         try {
-            const validationErrors = validateShopData(req.body);
-            if (validationErrors.length > 0) {
-                throw new AppError('Validation failed', 400, validationErrors);
-            }
-
-            const shop = await shopService.createShop({
+           
+ 
+            console.log("here ", req.body);
+                    const shop = await shopService.createShop({
                 ...req.body,
-                sellerId: req.user.id
+                ownerId: req.body.ownerId
             });
+            console.log("here is the shop created", shop);
             res.status(201).json(shop);
         } catch (error) {
             next(error);

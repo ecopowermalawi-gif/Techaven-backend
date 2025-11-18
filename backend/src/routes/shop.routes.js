@@ -8,8 +8,8 @@ const router = express.Router();
 
 // Public shop routes
 router.get(
-    '/',
-    cacheMiddleware(300), // Cache for 5 minutes
+    '/shops',
+   // cacheMiddleware(300), // Cache for 5 minutes
     shopController.getShops
 );
 
@@ -27,7 +27,7 @@ router.get(
 
 // Seller routes (protected)
 router.post(
-    '/',
+    '/add',
     //auth,
     //validateShop,
     shopController.createShop

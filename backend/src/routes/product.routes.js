@@ -31,7 +31,7 @@ router.get(
 router.post(
     '/',
     // auth,
-    checkRole(['seller', 'admin']),
+   // checkRole(['seller', 'admin']),
     uploadSingleFile('image'),
     productValidationRules.create,
     invalidateCache(['/products']),
