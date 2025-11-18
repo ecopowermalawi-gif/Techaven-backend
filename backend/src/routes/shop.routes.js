@@ -28,8 +28,8 @@ router.get(
 // Seller routes (protected)
 router.post(
     '/',
-    auth,
-    validateShop,
+    //auth,
+    //validateShop,
     shopController.createShop
 );
 

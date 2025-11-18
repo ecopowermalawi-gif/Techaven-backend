@@ -18,23 +18,21 @@ console.log("Checking if user already exists with email:", email, "or username:"
                 [email, username]
             );
 
-            if (existingUsers[0].length > 0) {
+            if (existingUsers.length > 0) {
                 throw new Error('User with this email or username already exists');
-
-
-console.log("generating salt")            }
+         }
 
             // Hash password
             const salt = await bcrypt.genSalt(10);
 
-            console.log("hashing  de password")
+           
             const passwordHash = await bcrypt.hash(password, salt);
 
             // Create user
 
             const userId = uuidv4();
 
-            console.log("user id ", userId)
+           
             await connection.query(
                 'INSERT INTO auth_users (id, email, password_hash, username) VALUES (?, ?, ?, ?)',
                 [userId, email, passwordHash, username]
