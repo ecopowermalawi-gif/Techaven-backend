@@ -26,26 +26,28 @@ export default function Screen1() {
 
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          {/* Main Heading */}
+          {/* Main Heading - Pushed Up */}
           <Text style={styles.mainHeading}>
             All Your Favorite{'\n'}Electronics Shops in One
           </Text>
 
-          {/* Center Image */}
+          {/* Center Image - Increased Size */}
           <Image
             source={require('@/assets/images/screen1.png')}
             style={styles.centerImage}
             resizeMode="contain"
           />
 
-       
+          {/* Spacer to push description and bars down */}
+          <View style={styles.middleSpacer} />
 
-          {/* Description */}
+          {/* Description - Pushed Down */}
           <Text style={styles.description}>
             Discover and buy top-quality electronics from
             verified suppliers across Malawi, all in one app.
           </Text>
-             {/* Indicator Bars */}
+
+          {/* Indicator Bars - Pushed Down */}
           <View style={styles.barsContainer}>
             {[0, 1, 2].map((i) => (
               <View
@@ -58,7 +60,10 @@ export default function Screen1() {
             ))}
           </View>
 
-          {/* Next Button */}
+          {/* Spacer to push button down */}
+          <View style={styles.bottomSpacer} />
+
+          {/* Next Button - Pushed Down */}
           <TouchableOpacity
             style={styles.nextButton}
             onPress={() => router.push('/Screen2')}
@@ -79,9 +84,10 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 40,
+    paddingTop: 10, // Further reduced to push heading even higher
   },
   mainHeading: {
     fontFamily: 'System',
@@ -91,14 +97,22 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
     textAlign: 'center',
     color: '#000',
-    marginBottom: 40,
-    marginTop: 60,
+    marginTop: 10, // Further reduced to push heading higher
+    marginBottom: 20,
   },
-  centerImage: { width: width * 0.9, height: 300, marginBottom: 30 },
+  centerImage: { 
+    width: width * 0.95, // Increased from 0.9 to 0.95
+    height: 350, // Increased from 300 to 350
+    marginBottom: 10, // Reduced margin since we're using spacer
+  },
+  middleSpacer: {
+    flex: 1, // This pushes description and bars down
+    minHeight: 40, // Minimum space between image and description
+  },
   barsContainer: {
     flexDirection: 'row',
     gap: 8,
-    marginBottom: 20, // Raised up above description
+    marginBottom: 20,
   },
   bar: {
     width: 40,
@@ -115,8 +129,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
     textAlign: 'center',
     color: '#555',
-    marginBottom: 40,
+    marginBottom: 20, // Reduced since spacer handles the pushing
     marginHorizontal: 20,
+  },
+  bottomSpacer: {
+    flex: 1, // This pushes the button to the bottom
+    minHeight: 20,
   },
   nextButton: {
     backgroundColor: '#007AFF',
@@ -126,6 +144,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     opacity: 1,
+    marginTop: 'auto',
   },
-  nextButtonText: { color: 'white', fontSize: 18, fontWeight: '600', textAlign: 'center' },
+  nextButtonText: { 
+    color: 'white', 
+    fontSize: 18, 
+    fontWeight: '600', 
+    textAlign: 'center' 
+  },
 });

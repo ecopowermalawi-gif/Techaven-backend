@@ -39,6 +39,20 @@ export default function RootLayout() {
       <Stack.Screen name="auth/phoneNumber" options={{ headerShown: false }} />
       <Stack.Screen name="auth/register" options={{ headerShown: false }} />
       <Stack.Screen name="auth/verify" options={{ headerShown: false }} />
+      <Stack.Screen name="Categories" options={{ headerShown: false }} />
+      <Stack.Screen name="HotSales" options={{ headerShown: false }} />
+      <Stack.Screen name="SpecialOffers" options={{ headerShown: false }} />
+      <Stack.Screen name="Profile" options={{ headerShown: false }} />
+      <Stack.Screen name="Cart" options={{ headerShown: false }} />
+      <Stack.Screen name="Settings" options={{ headerShown: false }} />
+      <Stack.Screen name="Support" options={{ headerShown: false }} />
+      <Stack.Screen name="AboutUs" options={{ headerShown: false }} />
+      <Stack.Screen name="ContactUs" options={{ headerShown: false }} />
+      <Stack.Screen name="category/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="product/[id]" options={{ headerShown: false }} />
+      <Stack.Screen name="search" options={{ headerShown: false }} />
+      <Stack.Screen name="Likes" options={{ headerShown: false }} />
+
 
       {/* Home - only allow if authenticated */}
       {isAuthenticated && <Stack.Screen name="home" options={{ headerShown: false }} />}

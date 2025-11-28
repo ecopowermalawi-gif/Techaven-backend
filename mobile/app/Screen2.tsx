@@ -27,26 +27,28 @@ export default function Screen2() {
 
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          {/* Main Heading */}
+          {/* Main Heading - Pushed Up */}
           <Text style={styles.mainHeading}>
             All Your Favorite{'\n'}Electronics Shops in One
           </Text>
 
-          {/* Center Image */}
+          {/* Center Image - Increased Size */}
           <Image
             source={require('@/assets/images/screen2.png')}
             style={styles.centerImage}
             resizeMode="contain"
           />
 
-        
+          {/* Spacer to push description and bars down */}
+          <View style={styles.middleSpacer} />
 
-          {/* Description */}
+          {/* Description - Pushed Down */}
           <Text style={styles.description}>
             Find the best deals on electronics from multiple stores.
             Compare products and make smart buying decisions.
           </Text>
-            {/* Indicator Bars */}
+
+          {/* Indicator Bars - Pushed Down */}
           <View style={styles.barsContainer}>
             {[0, 1, 2].map((i) => (
               <View
@@ -59,7 +61,10 @@ export default function Screen2() {
             ))}
           </View>
 
-          {/* Next Button */}
+          {/* Spacer to push button down */}
+          <View style={styles.bottomSpacer} />
+
+          {/* Next Button - Pushed Down */}
           <TouchableOpacity
             style={styles.nextButton}
             onPress={() => router.push('/Screen3')}
@@ -80,40 +85,57 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 40,
+    paddingTop: 10, // Reduced to push heading higher
   },
   mainHeading: {
     fontFamily: 'Proxima Nova',
     fontWeight: '400',
-    fontSize: 18.1,
-    lineHeight: 18.1,
-    letterSpacing: 0,
+    fontSize: 26, // Increased from 18.1 to match Screen1
+    lineHeight: 38, // Increased from 18.1 to match Screen1
+    letterSpacing: -0.5, // Added to match Screen1
     textAlign: 'center',
     color: '#000',
-    marginBottom: 40,
-    marginTop: 60,
+    marginTop: 10, // Reduced from 60 to push heading higher
+    marginBottom: 20, // Reduced from 40
   },
-  centerImage: { width: width * 0.9, height: 300, marginBottom: 30 },
+  centerImage: { 
+    width: width * 0.95, // Increased from 0.9 to 0.95
+    height: 350, // Increased from 300 to 350
+    marginBottom: 10, // Reduced from 30
+  },
+  middleSpacer: {
+    flex: 1, // This pushes description and bars down
+    minHeight: 40, // Minimum space between image and description
+  },
   barsContainer: {
     flexDirection: 'row',
     gap: 8,
     marginBottom: 20,
   },
-  bar: { width: 40, height: 6, borderRadius: 3 },
+  bar: { 
+    width: 40, 
+    height: 6, 
+    borderRadius: 3 
+  },
   activeBar: { backgroundColor: '#007AFF' },
   inactiveBar: { backgroundColor: '#CCC' },
   description: {
     fontFamily: 'Proxima Nova',
     fontWeight: '400',
-    fontSize: 18.1,
-    lineHeight: 18.1,
+    fontSize: 18, // Changed from 18.1 to 18 to match Screen1
+    lineHeight: 18,
     letterSpacing: 0,
     textAlign: 'center',
     color: '#555',
-    marginBottom: 40,
+    marginBottom: 20, // Reduced from 40
     marginHorizontal: 20,
+  },
+  bottomSpacer: {
+    flex: 1, // This pushes the button to the bottom
+    minHeight: 20,
   },
   nextButton: {
     backgroundColor: '#007AFF',
@@ -123,6 +145,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     opacity: 1,
+    marginTop: 'auto', // Ensures button stays at bottom
   },
-  nextButtonText: { color: 'white', fontSize: 18, fontWeight: '600', textAlign: 'center' },
+  nextButtonText: { 
+    color: 'white', 
+    fontSize: 18, 
+    fontWeight: '600', 
+    textAlign: 'center' 
+  },
 });

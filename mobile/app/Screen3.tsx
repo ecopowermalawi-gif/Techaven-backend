@@ -27,19 +27,27 @@ export default function Screen3() {
 
       <SafeAreaView style={styles.safeArea}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
-          {/* Main Heading */}
+          {/* Main Heading - Pushed Up */}
           <Text style={styles.mainHeading}>
             All Your Favorite{'\n'}Electronics Shops in One
           </Text>
 
-          {/* Center Image */}
+          {/* Center Image - Increased Size */}
           <Image
             source={require('@/assets/images/screen3.png')}
             style={styles.centerImage}
             resizeMode="contain"
           />
 
-          {/* Indicator Bars */}
+          {/* Spacer to push content down */}
+          <View style={styles.middleSpacer} />
+
+          {/* Description - Pushed Down */}
+          <Text style={styles.description}>
+            Let's get started! Sign in or create an account to explore the best electronics deals.
+          </Text>
+
+          {/* Indicator Bars - Between Description and Button */}
           <View style={styles.barsContainer}>
             {[0, 1, 2].map((i) => (
               <View
@@ -52,12 +60,10 @@ export default function Screen3() {
             ))}
           </View>
 
-          {/* Description */}
-          <Text style={styles.description}>
-            Let’s get started! Sign in or create an account to explore the best electronics deals.
-          </Text>
+          {/* Spacer to push button down - Reduced distance */}
+          <View style={styles.bottomSpacer} />
 
-          {/* Login / Register Button */}
+          {/* Login / Register Button - Pushed Down */}
           <TouchableOpacity
             style={styles.nextButton}
             onPress={() => router.push('/Screen4')}
@@ -78,40 +84,57 @@ const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 40,
+    paddingTop: 10, // Reduced to push heading higher
   },
   mainHeading: {
-    fontFamily: 'Proxima Nova',
+    fontFamily: 'Poppins',
     fontWeight: '400',
-    fontSize: 18.1,
-    lineHeight: 18.1,
-    letterSpacing: 0,
+    fontSize: 26,
+    lineHeight: 38,
+    letterSpacing: -0.5,
     textAlign: 'center',
     color: '#000',
-    marginBottom: 40,
-    marginTop: 60,
+    marginTop: 10,
+    marginBottom: 20,
   },
-  centerImage: { width: width * 0.9, height: 300, marginBottom: 30 },
+  centerImage: { 
+    width: width * 0.95,
+    height: 350,
+    marginBottom: 10,
+  },
+  middleSpacer: {
+    flex: 1,
+    minHeight: 40,
+  },
   barsContainer: {
     flexDirection: 'row',
     gap: 8,
-    marginBottom: 20,
+    marginBottom: 10, // Reduced margin to bring button closer
   },
-  bar: { width: 40, height: 6, borderRadius: 3 },
+  bar: { 
+    width: 40, 
+    height: 6, 
+    borderRadius: 3 
+  },
   activeBar: { backgroundColor: '#007AFF' },
   inactiveBar: { backgroundColor: '#CCC' },
   description: {
-    fontFamily: 'Proxima Nova',
+    fontFamily: 'Poppins',
     fontWeight: '400',
-    fontSize: 18.1,
-    lineHeight: 18.1,
+    fontSize: 18,
+    lineHeight: 18,
     letterSpacing: 0,
     textAlign: 'center',
     color: '#555',
-    marginBottom: 40,
+    marginBottom: 15, // Reduced margin to bring bars closer
     marginHorizontal: 20,
+  },
+  bottomSpacer: {
+    flex: 0.5, // Reduced from 1 to decrease distance
+    minHeight: 10, // Reduced minimum height
   },
   nextButton: {
     backgroundColor: '#007AFF',
@@ -121,6 +144,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     opacity: 1,
+    marginTop: 'auto',
   },
-  nextButtonText: { color: 'white', fontSize: 18, fontWeight: '600', textAlign: 'center' },
+  nextButtonText: { 
+    color: 'white', 
+    fontSize: 18, 
+    fontWeight: '600', 
+    fontFamily: 'Poppins',
+    textAlign: 'center' 
+  },
 });

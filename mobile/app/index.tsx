@@ -18,6 +18,12 @@ type RootStackParamList = {
   Register: undefined;
   Auth: undefined;
   Home: undefined;
+  Profile: undefined;
+  Categories: undefined;
+  ProductDetails: { productId: string };
+  Cart: undefined;
+  Checkout: undefined;
+  OrderConfirmation: undefined;
 };
 
 type SplashScreenNavigationProp = NativeStackNavigationProp<
