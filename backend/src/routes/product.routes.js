@@ -30,8 +30,8 @@ router.get(
 // Protected routes (Admin only)
 router.post(
     '/',
-    auth,
-    checkRole(['admin']),
+    // auth,
+   // checkRole(['seller', 'admin']),
     uploadSingleFile('image'),
     productValidationRules.create,
     invalidateCache(['/products']),
@@ -41,7 +41,7 @@ router.post(
 router.put(
     '/:productId',
     auth,
-    checkRole(['admin']),
+    checkRole(['seller', 'admin']),
     uploadSingleFile('image'),
     productValidationRules.update,
     invalidateCache(['/products']),
@@ -51,7 +51,7 @@ router.put(
 router.delete(
     '/:productId',
     auth,
-    checkRole(['admin']),
+    checkRole(['seller', 'admin']),
     invalidateCache(['/products']),
     productController.deleteProduct
 );
@@ -59,7 +59,7 @@ router.delete(
 router.put(
     '/:productId/stock',
     auth,
-    checkRole(['admin']),
+    checkRole(['seller']),
     productController.updateStock
 );
 

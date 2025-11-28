@@ -6,6 +6,7 @@ import reviewRoutes from './review.routes.js';
 import promotionRoutes from './promotion.routes.js';
 import supportRoutes from './support.routes.js';
 import shippingRoutes from './shipping.routes.js';
+import shopRoutes from './shop.routes.js'
 
 const router = express.Router();
 
@@ -25,5 +26,6 @@ router.use('/reviews', reviewRoutes);
 router.use('/promotions', promotionRoutes);
 router.use('/support', supportRoutes);
 router.use('/shipping', shippingRoutes);
+router.use('shops', shopRoutes);
 
 export default router;

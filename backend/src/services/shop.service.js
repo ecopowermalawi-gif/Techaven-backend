@@ -2,10 +2,13 @@ import  pool  from  '../config/database.js';
 import { AppError } from '../utils/error.js';
 
 class ShopService {
+    
+      
     // Get all shops with filters and pagination
-    async getShops({ page = 1, limit = 10, search = '', category = '', sort = 'createdAt' }) {
+    async getShops({ page = 1, limit = 10, search = '', address = '', sort = 'created_at' }) {
         const offset = (page - 1) * limit;
-        let query = 'SELECT * FROM shops WHERE status = "approved"';
+        const db =  await pool.getConnection();
+        let query = 'SELECT * FROM shops';
         const params = [];
 
         if (search) {
@@ -13,9 +16,9 @@ class ShopService {
             params.push(`%${search}%`, `%${search}%`);
         }
 
-        if (category) {
-            query += ' AND category = ?';
-            params.push(category);
+        if (address) {
+            query += ' AND address = ?';
+            params.push(address);
         }
 
         // Add sorting
@@ -23,13 +26,13 @@ class ShopService {
         params.push(limit, offset);
 
         const [shops] = await db.query(query, params);
-        const [{ total }] = await db.query('SELECT COUNT(*) as total FROM shops');
+        const total = await db.query('SELECT COUNT(shop_id) FROM shops');
 
         return {
             shops,
             pagination: {
-                page: parseInt(page),
-                limit: parseInt(limit),
+                page: page,
+                limit: limit,
                 total
             }
         };
@@ -37,7 +40,10 @@ class ShopService {
 
     // Get single shop by ID
     async getShopById(shopId) {
-        const [shop] = await db.query('SELECT * FROM shops WHERE id = ?', [shopId]);
+          const db = await pool.getConnection();
+
+        const [shop] = await db.query('SELECT * FROM shops WHERE shop_id = ?', [shopId]);
+       
         return shop[0];
     }
 
@@ -70,20 +76,18 @@ class ShopService {
 
     // Create new shop
     async createShop(data) {
-        const { name, description, category, address, sellerId } = data;
+        console.log("shop service ...", data);
 
-        // Check if seller already has a shop
-        const [existingShop] = await db.query('SELECT * FROM shops WHERE seller_id = ?', [sellerId]);
-        if (existingShop.length > 0) {
-            throw new AppError('Seller already has a shop', 400);
-        }
+        const db =  await pool.getConnection();
+        const {ownerId , name,  description, address } = data;
 
-        const [result] = await db.query(
-            'INSERT INTO shops (name, description, category, address, seller_id, status) VALUES (?, ?, ?, ?, ?, "pending")',
-            [name, description, category, address, sellerId]
-        );
+        const [result] = await db.query(`INSERT INTO shops (ownerId, name, description, address) 
+        VALUES (?, ?,?,?)`, [ownerId, name, description, address]);
+      
+            
+                      console.log("here comes the data ", result);
 
-        return this.getShopById(result.insertId);
+    return this.getShopById(ownerId);
     }
 
     // Update shop details
