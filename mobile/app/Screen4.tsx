@@ -21,6 +21,11 @@ export default function Screen4() {
     router.back(); // Go back to previous screen
   };
 
+  // ADDED: Handle register navigation
+  const handleRegister = () => {
+    router.push('/auth/Register');
+  };
+
   // Show loading or fallback until fonts are loaded
   if (!fontsLoaded) {
     return (
@@ -81,6 +86,14 @@ export default function Screen4() {
             {/* Email Auth Option */}
             <TouchableOpacity style={styles.authOption}>
               <Text style={styles.authText}>Email</Text>
+            </TouchableOpacity>
+
+            {/* ADDED: Register Option */}
+            <TouchableOpacity 
+              style={styles.authOption}
+              onPress={handleRegister}
+            >
+              <Text style={styles.authText}>Create Account</Text>
             </TouchableOpacity>
 
             {/* Phone Auth Option */}
