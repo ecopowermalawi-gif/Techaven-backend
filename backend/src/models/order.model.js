@@ -19,7 +19,7 @@ class Order {
             let total_amount = 0;
             for (const item of items) {
                 const [product] = await connection.query(
-                    'SELECT price, stock FROM products WHERE id = ?',
+                    'SELECT price, stock FROM catalog_products WHERE id = ?',
                     [item.product_id]
                 );
 

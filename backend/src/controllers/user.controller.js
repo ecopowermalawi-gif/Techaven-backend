@@ -65,11 +65,9 @@ class UserController {
             });
         }
     }
-
-
-    async getProfile(req, res) {
+async getProfile(req, res) {
         try {
-            const userId = req.user.id;
+            const userId = req.body.user_id;
             const user = await userService.getUserById(userId);
             if (!user) {
                 return res.status(404).json({
@@ -89,9 +87,78 @@ class UserController {
         }
     }
 
-    async updateProfile(req, res) {
+async getSellers(req, res) {
         try {
-            const userId = req.user.id;
+            
+            const user = await userService.getAllSellers();
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'User not found'
+                });
+            }
+            res.json({
+                success: true,
+                data: user
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Failed to fetch profile'
+            });
+        }
+    }
+async getBuyers(req, res) {
+        try {
+            
+            const user = await userService.getAllBuyers();
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'User not found'
+                });
+            }
+            res.json({
+                success: true,
+                data: user
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Failed to fetch profile'
+            });
+        }
+    }
+
+
+
+
+    async getUserById(req, res) {
+        try {
+            console.log("requesting user with id ", req.body.user_id)
+            const userId = req.body.user_id;
+            const user = await userService.getUserById(userId);
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'User not found'
+                });
+            }
+            res.json({
+                success: true,
+                data: user
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Failed to fetch user'
+            });
+        }
+    }
+async updateProfile(req, res) {
+        try {
+            const userId = req.body.user_id;
+            console.log("user to be updated ",userId)
             await userService.updateUserProfile(userId, req.body);
             res.json({
                 success: true,
@@ -104,6 +171,9 @@ class UserController {
             });
         }
     }
+
+
+
 
     async changePassword(req, res) {
         try {
@@ -137,6 +207,22 @@ class UserController {
             });
         }
     }
-}
+async deleteUser(req, res) {
 
+        console.log("deleting user with id ", req.body.user_id)
+        try {
+            const userId = req.body.user_id;
+            await userService.deleteUser(userId);
+            res.json({
+                success: true,
+                message: 'User deleted successfully'
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Failed to delete user'
+            });
+        }
+    }
+}
 export default new UserController();

@@ -23,6 +23,34 @@ class ProductService {
         }
     }
 
+    async getLatestProducts(limit = 10, offset = 0) {
+
+        const db = await pool.getConnection();
+        console.log("Inside getLatestProducts service");
+        try {
+            const [products] = await db.query(`
+                SELECT p.*, 
+                       GROUP_CONCAT(DISTINCT c.id, ':', c.name, ':', c.slug) as categories,
+                       GROUP_CONCAT(DISTINCT pi.id, ':', pi.url, ':', COALESCE(pi.alt_text, '')) as images
+                FROM catalog_products p
+                LEFT JOIN catalog_product_categories pc ON p.id = pc.product_id
+                LEFT JOIN catalog_categories c ON pc.category_id = c.id
+                LEFT JOIN catalog_product_images pi ON p.id = pi.product_id
+                WHERE p.is_active = 1
+                ORDER BY p.created_at DESC
+                LIMIT ? OFFSET ?
+            `, [limit, offset]);
+
+            return products.map(product => this.formatProductResponse(product));
+        } catch (error) {
+            throw new Error('Error fetching products');
+        }
+    }
+
+
+
+
+    
     async getProductById(id) {
         try {
             const [products] = await pool.query(`
@@ -47,6 +75,7 @@ class ProductService {
 
     async createProduct(productData) {
         const connection = await pool.getConnection();
+      console.log("here comes produc service", productData)
         try {
             await connection.beginTransaction();
 
@@ -68,6 +97,9 @@ class ProductService {
                 productData.is_active ?? 1
             ]);
 
+            console.log("Inserted product with ID:", productId);
+            console.log("products data ", productData);
+            
             if (productData.categories?.length) {
                 const categoryValues = productData.categories.map(cat => [productId, cat.id]);
                 await connection.query(`
@@ -79,6 +111,7 @@ class ProductService {
             await connection.commit();
             return productId;
         } catch (error) {
+            console.log(error);
             await connection.rollback();
             throw new Error('Error creating product');
         } finally {
@@ -173,6 +206,7 @@ class ProductService {
                 )
                 GROUP BY p.id
             `, [`%${query}%`, `%${query}%`, `%${query}%`]);
+            console.log("Search products result:", products);
 
             return products.map(product => this.formatProductResponse(product));
         } catch (error) {

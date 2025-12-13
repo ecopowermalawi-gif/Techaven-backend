@@ -4,7 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
 class UserService {
-    async registerUser(email, password, username, role) {
+async registerUser(email, password, username, role) {
         const connection = await pool.getConnection();
         try {
             await connection.beginTransaction();
@@ -78,7 +78,7 @@ console.log("Checking if user already exists with email:", email, "or username:"
         }
     }
 
-    async loginUser(email, password) {
+async loginUser(email, password) {
         try {
             // Get user with roles
             const [users] = await pool.query(`
@@ -122,33 +122,78 @@ console.log("Checking if user already exists with email:", email, "or username:"
         }
     }
 
-    async getUserById(id) {
-        try {
-            const [users] = await pool.query(`
-                SELECT u.*, 
-                       GROUP_CONCAT(DISTINCT r.name) as roles,
-                       up.full_name, up.phone, up.dob, up.locale
-                FROM auth_users u
-                LEFT JOIN auth_users_roles ur ON u.id = ur.user_id
-                LEFT JOIN auth_roles r ON ur.role_id = r.id
-                LEFT JOIN auth_user_profile up ON u.id = up.user_id
-                WHERE u.id = ?
-                GROUP BY u.id
-            `, [id]);
+async getUserById(userId) {
+    const db = await pool.getConnection();
+
+    
+    console.log("user id in user contro ",userId)
+    db.beginTransaction;
+    try {
+            const [users] = await db.query(`
+                SELECT *
+                FROM auth_users
+                WHERE id = ?
+            `, [userId]);
+
+              console.log("user id in user contro ",users)
 
             if (users[0].length === 0) return null;
 
             const user = users[0];
             delete user.password_hash;
             user.roles = user.roles ? user.roles.split(',') : [];
-
+db.commit;
             return user;
         } catch (error) {
+         db.rollback;
             throw new Error('Failed to fetch user');
+        }
+        finally{
+            db.release;
         }
     }
 
-       async getAllUsers() {
+    async getAllSellers() {
+               try {
+            const [users] = await pool.query(`
+                SELECT *
+                FROM auth_users au LEFT JOIN auth_users_roles aur ON au.id = aur.user_id
+                LEFT JOIN auth_roles ar ON aur.role_id = ar.id
+                WHERE ar.name = 'seller'
+            `, []);
+
+              console.log("Sellers  ",users)
+
+            return users;
+        } catch (error) {
+            throw new Error('Failed to fetch user');
+        }
+
+
+
+    }
+
+       async getAllBuyers() {
+               try {
+            const [users] = await pool.query(`
+                SELECT *
+                FROM auth_users au LEFT JOIN auth_users_roles aur ON au.id = aur.user_id
+                LEFT JOIN auth_roles ar ON aur.role_id = ar.id
+                WHERE ar.name = 'buyer'
+            `, []);
+
+              console.log("buyers  ",users)
+
+            return users;
+        } catch (error) {
+            throw new Error('Failed to fetch user');
+        }
+
+
+
+    }
+
+async getAllUsers() {
         console.log("Fetching all users");
         try {
             const [users] = await pool.query(`
@@ -172,22 +217,45 @@ console.log("Checking if user already exists with email:", email, "or username:"
         }
     }
 
-    async updateUserProfile(userId, data) {
+    
+
+async deleteUser(user_id) {
+    const db = await pool.getConnection();
+    try {
+        await db.beginTransaction();
+
+        // Delete user roles
+        const result =  await db.query(
+            'DELETE FROM auth_users WHERE id = ?',
+            [user_id]
+        );
+        console.log("Deleted a user results :", result);
+    } catch (error) {
+        await db.rollback();
+        throw new Error('Failed to delete user roles');
+    } finally {
+        db.release();
+    }
+}
+        
+        
+async updateUserProfile(user_id, data) {
+
+        console.log("Updating profile for user id:", user_id, "with data:", data);
         try {
             const [result] = await pool.query(`
                 UPDATE auth_user_profile
                 SET full_name = COALESCE(?, full_name),
                     phone = COALESCE(?, phone),
-                    dob = COALESCE(?, dob),
                     locale = COALESCE(?, locale)
                 WHERE user_id = ?
             `, [
                 data.full_name,
                 data.phone,
-                data.dob,
                 data.locale,
-                userId
+                data.user_id
             ]);
+            console.log("Update result:", result);
 
             return true;
         } catch (error) {
@@ -195,7 +263,7 @@ console.log("Checking if user already exists with email:", email, "or username:"
         }
     }
 
-    async changePassword(userId, oldPassword, newPassword) {
+async changePassword(userId, oldPassword, newPassword) {
         try {
             // Get current password hash
             const [users] = await pool.query(
@@ -229,7 +297,7 @@ console.log("Checking if user already exists with email:", email, "or username:"
         }
     }
 
-    async addUserRole(userId, roleName) {
+async addUserRole(userId, roleName) {
         const connection = await pool.getConnection();
       
         try {

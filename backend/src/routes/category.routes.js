@@ -7,8 +7,8 @@ const router = express.Router();
 
 // Public routes
 router.get(
-    '/',
-    cacheMiddleware(300), // Cache for 5 minutes
+    '/categories/',
+    //cacheMiddleware(300), // Cache for 5 minutes
     categoryController.getAllCategories
 );
 
@@ -20,10 +20,10 @@ router.get(
 
 // Admin routes
 router.post(
-    '/',
+    '/add/',
     auth,
-    checkRole(['admin']),
-    invalidateCache(['/categories']),
+    //checkRole(['admin']),
+    //invalidateCache(['/categories']),
     categoryController.createCategory
 );
 

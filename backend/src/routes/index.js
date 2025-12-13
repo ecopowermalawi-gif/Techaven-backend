@@ -7,7 +7,8 @@ import promotionRoutes from './promotion.routes.js';
 import supportRoutes from './support.routes.js';
 import shippingRoutes from './shipping.routes.js';
 import shopRoutes from './shop.routes.js'
-
+//import paymentRoutes from './payment.routes.js';
+import inventoryRoutes from './inventory.routes.js';
 const router = express.Router();
 
 // Health check endpoint
@@ -26,6 +27,8 @@ router.use('/reviews', reviewRoutes);
 router.use('/promotions', promotionRoutes);
 router.use('/support', supportRoutes);
 router.use('/shipping', shippingRoutes);
-router.use('shops', shopRoutes);
+router.use('/shops', shopRoutes);
+router.use('/inventory', inventoryRoutes);
+//router.use('/payments', paymentRoutes); 
 
 export default router;

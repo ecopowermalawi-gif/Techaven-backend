@@ -26,8 +26,8 @@ router.post(
 
 router.post(
     '/login',
-    loginLimiter,
-    userValidationRules.login,
+    //loginLimiter,
+    //userValidationRules.login,
     userController.login
 );
 
@@ -37,11 +37,22 @@ router.get(
     auth,
     userController.getProfile
 );
+router.get(
+    '/sellers',
+    //auth,
+    userController.getSellers
+);  
+
+router.get(
+    '/buyers',
+    //auth,
+    userController.getBuyers
+); 
 
 router.put(
     '/profile',
-    auth,
-    userValidationRules.updateProfile,
+    //auth,
+    //userValidationRules.updateProfile,
     userController.updateProfile
 );
 
@@ -59,5 +70,12 @@ router.post(
     checkRole(['admin']),
     userController.addRole
 );
+router.delete(
+    '/delete',
+    //auth,
+    //checkRole(['admin']),
+    userController.deleteUser
+);  
 
 export default router;
+

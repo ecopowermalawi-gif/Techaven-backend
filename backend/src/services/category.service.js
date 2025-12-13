@@ -11,10 +11,12 @@ class CategoryService {
                 WHERE c.parent_id IS NULL
                 GROUP BY c.id
             `);
+console.log("Categories:", categories);
 
             // Fetch subcategories for each main category
             for (let category of categories) {
                 category.subcategories = await this.getSubcategories(category.id);
+console.log("each category :", category);
             }
 
             return categories;

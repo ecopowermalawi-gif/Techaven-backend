@@ -1,7 +1,7 @@
 import mysql from 'mysql2/promise';
-import config from '../config/config.js';
 
-const pool = mysql.createPool(config.database);
+import  pool  from  '../config/database.js';
+
 
 class ShippingService {
     async calculateShipping(items, address) {
@@ -68,10 +68,11 @@ class ShippingService {
     }
 
     async getShippingMethods() {
+        console.log("Retrieving shipping methods from database");
         const connection = await pool.getConnection();
         try {
             const [methods] = await connection.query(
-                'SELECT * FROM shipping_methods WHERE is_active = true'
+                'SELECT * FROM shipping_providers'
             );
             return methods;
         } finally {
@@ -219,6 +220,7 @@ class ShippingService {
         }
     }
 
+
     async updateShippingZone(zoneId, updateData) {
         const connection = await pool.getConnection();
         try {
@@ -262,6 +264,31 @@ class ShippingService {
             await connection.rollback();
             throw error;
         } finally {
+            connection.release();
+        }
+    }
+
+   async getShippingMethodsByID(shipping_provider_id) {
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
+
+               const shipping_methods_results = await connection.query(
+                    'SELECT * FROM shipping_providers  WHERE id = ?',
+                    [shipping_provider_id]
+                );
+            
+            
+
+            await connection.commit();
+
+            return shipping_methods_results[0];
+        } catch (error) {
+            console.log("error in shipping service", error);
+            await connection.rollback();
+            throw error;
+        } finally {
+            console.log("releasing connection");
             connection.release();
         }
     }

@@ -9,10 +9,16 @@ const router = express.Router();
 
 // Public routes
 router.get(
-    '/',
+    '/products/',
     paginationRules,
     cacheMiddleware(300), // Cache for 5 minutes
     productController.getAllProducts
+);
+router.get(
+    '/latest',
+    paginationRules,
+    cacheMiddleware(300), // Cache for 5 minutes
+    productController.getLatestProducts
 );
 
 router.get(
@@ -29,12 +35,12 @@ router.get(
 
 // Protected routes (Admin only)
 router.post(
-    '/',
+    '/add',
     // auth,
    // checkRole(['seller', 'admin']),
     uploadSingleFile('image'),
-    productValidationRules.create,
-    invalidateCache(['/products']),
+    //productValidationRules.create,
+    //invalidateCache(['/products']),
     productController.createProduct
 );
 

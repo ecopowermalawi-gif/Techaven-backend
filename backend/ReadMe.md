@@ -1,7 +1,7 @@
 # TechHaven E-commerce API End Points
 
 ## Overview
-TechHaven is a comprehensive e-commerce platform built with Node.js, Express, and MySQL. This repository contains the backend API that powers the platform.
+TechHaven Backend is an e-commerce platform built with Node.js, Express, and MySQL. This repository contains the backend API that powers the platform.
 
 ## Technical Stack
 - **Runtime**: Node.js v20.x
@@ -39,7 +39,7 @@ cp .env.example .env
 
 4. Run migrations:
 ```bash
-npm run migrate
+npm run migrate / import the schema into db
 ```
 
 5. Start the development server:
@@ -65,7 +65,7 @@ Authorization: Bearer your-jwt-token
 #### 1. Authentication & User Management
 ```http
 # Public Routes
-POST /auth/register
+POST /user/register
 {
   "email": "buyer@gmail.com",
   "password": "secure123",
@@ -73,7 +73,7 @@ POST /auth/register
   "role" : "buyer"
 }
 
-POST /auth/login
+POST /user/login
 {
   "email": "buyer1@gmail.com",
   "password": "buyer1"
@@ -98,8 +98,11 @@ output
 
 # Protected Routes
 GET /users/me                 # Get current user profile
-GET /users                    # List users (Admin only)
+GET /users/:user_id           # Get user by id
+
+GET /users/users                    # List users (Admin only)
 PUT /users/profile           # Update profile
+POST /users/logout           # Log out
 PUT /users/password         # Change password
 ```
 
@@ -133,11 +136,11 @@ Example Response:
 #### 2. Product Management
 ```http
 # Public Routes
-GET /products                # List all products
+GET /products/products/     # List all products
 GET /products/search        # Search products
 GET /products/:id           # Get single product
 
-# Protected Routes (Admin)
+# Protected Routes (Seller)
 POST /products             # Create product
 {
   "title": "iPhone 15 Pro",
