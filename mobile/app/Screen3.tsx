@@ -10,6 +10,15 @@ export default function Screen3() {
   const router = useRouter();
   const activeIndex = 2; // Screen3 is active
 
+  // Function to handle onboarding completion
+  const handleOnboardingComplete = async () => {
+    // Mark onboarding as completed
+    // await AsyncStorage.setItem('onboardingCompleted', 'true');
+    
+    // Navigate to Home
+    router.replace('/Home'); // Use replace so user can't go back to onboarding
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
@@ -63,12 +72,12 @@ export default function Screen3() {
           {/* Spacer to push button down - Reduced distance */}
           <View style={styles.bottomSpacer} />
 
-          {/* Login / Register Button - Pushed Down */}
+          {/* Get Started Button - Now goes to Home */}
           <TouchableOpacity
             style={styles.nextButton}
-            onPress={() => router.push('/Screen4')}
+            onPress={handleOnboardingComplete}
           >
-            <Text style={styles.nextButtonText}>Next</Text>
+            <Text style={styles.nextButtonText}>Get Started</Text>
           </TouchableOpacity>
         </ScrollView>
       </SafeAreaView>
@@ -87,7 +96,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingBottom: 40,
-    paddingTop: 10, // Reduced to push heading higher
+    paddingTop: 10,
   },
   mainHeading: {
     fontFamily: 'Poppins',
@@ -112,7 +121,7 @@ const styles = StyleSheet.create({
   barsContainer: {
     flexDirection: 'row',
     gap: 8,
-    marginBottom: 10, // Reduced margin to bring button closer
+    marginBottom: 10,
   },
   bar: { 
     width: 40, 
@@ -129,12 +138,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0,
     textAlign: 'center',
     color: '#555',
-    marginBottom: 15, // Reduced margin to bring bars closer
+    marginBottom: 15,
     marginHorizontal: 20,
   },
   bottomSpacer: {
-    flex: 0.5, // Reduced from 1 to decrease distance
-    minHeight: 10, // Reduced minimum height
+    flex: 0.5,
+    minHeight: 10,
   },
   nextButton: {
     backgroundColor: '#007AFF',

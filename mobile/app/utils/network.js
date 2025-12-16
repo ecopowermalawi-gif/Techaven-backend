@@ -1,6 +1,6 @@
 // mobile/src/utils/network.js
 import NetInfo from '@react-native-community/netinfo';
-import { getBaseURL } from '../api';
+import { getBaseURL } from '../services/api';
 
 export const checkNetworkConnection = async () => {
   try {

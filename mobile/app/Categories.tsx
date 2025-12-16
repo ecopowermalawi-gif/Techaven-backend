@@ -1,358 +1,311 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
-  Image, 
   StyleSheet, 
   Dimensions, 
-  TextInput, 
   TouchableOpacity,
   ScrollView,
-  FlatList,
   StatusBar,
+  ActivityIndicator,
+  Alert,
+  RefreshControl,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useFonts, Poppins_400Regular, Poppins_600SemiBold } from '@expo-google-fonts/poppins';
+import { useFonts, Poppins_400Regular, Poppins_500Medium, Poppins_600SemiBold } from '@expo-google-fonts/poppins';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import apiService from './services/api';
+import { useTheme } from './context/ThemeContext';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
-// Type definitions
-interface CategoryItem {
+// Type definition
+interface Category {
   id: string;
   name: string;
-  description: string;
-  icon: string;
-  color: string;
-  gradient: [string, string];
-  items: string;
-  isFeatured: boolean;
+  description?: string;
+  product_count?: number;
+  image_url?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-interface FilterButtonProps {
-  label: string;
-  value: string;
-  isActive: boolean;
-  onPress: (value: string) => void;
+interface CategoryGridItemProps {
+  item: Category;
+  index: number;
+  onPress: (id: string, name: string) => void;
+  isDarkMode?: boolean;
 }
 
-interface FeaturedCategoryCardProps {
-  item: CategoryItem;
-  onPress: (id: string) => void;
-}
+// Icon mapping for categories
+const getCategoryIcon = (categoryName: string): { icon: string; color: string } => {
+  const lowerName = categoryName.toLowerCase();
+  
+  const iconMap: Record<string, { icon: string; color: string }> = {
+    'phone': { icon: '📱', color: '#6366F1' },
+    'smartphone': { icon: '📱', color: '#6366F1' },
+    'computer': { icon: '💻', color: '#06B6D4' },
+    'laptop': { icon: '💻', color: '#06B6D4' },
+    'wearable': { icon: '⌚', color: '#10B981' },
+    'watch': { icon: '⌚', color: '#10B981' },
+    'headphone': { icon: '🎧', color: '#F59E0B' },
+    'audio': { icon: '🎧', color: '#F59E0B' },
+    'speaker': { icon: '🔊', color: '#F59E0B' },
+    'tablet': { icon: '📱', color: '#EF4444' },
+    'ipad': { icon: '📱', color: '#EF4444' },
+    'camera': { icon: '📸', color: '#8B5CF6' },
+    'gaming': { icon: '🎮', color: '#EC4899' },
+    'console': { icon: '🎮', color: '#EC4899' },
+    'accessory': { icon: '🔌', color: '#14B8A6' },
+    'charger': { icon: '🔌', color: '#14B8A6' },
+    'home': { icon: '🏠', color: '#F97316' },
+    'appliance': { icon: '🏠', color: '#F97316' },
+    'tv': { icon: '📺', color: '#3B82F6' },
+    'monitor': { icon: '🖥️', color: '#3B82F6' },
+    'storage': { icon: '💾', color: '#8B5CF6' },
+    'network': { icon: '📡', color: '#0EA5E9' },
+    'router': { icon: '📡', color: '#0EA5E9' },
+    'software': { icon: '💿', color: '#6366F1' },
+    'book': { icon: '📚', color: '#84CC16' },
+  };
 
-interface RegularCategoryCardProps {
-  item: CategoryItem;
-  onPress: (id: string) => void;
-}
+  // Check for matches
+  for (const key in iconMap) {
+    if (lowerName.includes(key)) {
+      return iconMap[key];
+    }
+  }
 
-// Category data
-const CATEGORIES_DATA: CategoryItem[] = [
-  {
-    id: '1',
-    name: 'Smartphones',
-    description: 'Latest models & accessories',
-    icon: '📱',
-    color: '#6366F1',
-    gradient: ['#6366F1', '#8B5CF6'] as [string, string],
-    items: '124 products',
-    isFeatured: true,
-  },
-  {
-    id: '2',
-    name: 'Laptops',
-    description: 'Gaming, Business & More',
-    icon: '💻',
-    color: '#06B6D4',
-    gradient: ['#06B6D4', '#0EA5E9'] as [string, string],
-    items: '89 products',
-    isFeatured: true,
-  },
-  {
-    id: '3',
-    name: 'Audio',
-    description: 'Headphones & Speakers',
-    icon: '🎧',
-    color: '#10B981',
-    gradient: ['#10B981', '#34D399'] as [string, string],
-    items: '67 products',
-    isFeatured: false,
-  },
-  {
-    id: '4',
-    name: 'Smart Watches',
-    description: 'Fitness & Lifestyle',
-    icon: '⌚',
-    color: '#F59E0B',
-    gradient: ['#F59E0B', '#FBBF24'] as [string, string],
-    items: '45 products',
-    isFeatured: true,
-  },
-  {
-    id: '5',
-    name: 'Tablets',
-    description: 'iPad & Android Tablets',
-    icon: '📱',
-    color: '#EF4444',
-    gradient: ['#EF4444', '#F87171'] as [string, string],
-    items: '32 products',
-    isFeatured: false,
-  },
-  {
-    id: '6',
-    name: 'Gaming',
-    description: 'Consoles & Accessories',
-    icon: '🎮',
-    color: '#8B5CF6',
-    gradient: ['#8B5CF6', '#A78BFA'] as [string, string],
-    items: '78 products',
-    isFeatured: true,
-  },
-  {
-    id: '7',
-    name: 'Cameras',
-    description: 'DSLR & Mirrorless',
-    icon: '📸',
-    color: '#EC4899',
-    gradient: ['#EC4899', '#F472B6'] as [string, string],
-    items: '56 products',
-    isFeatured: false,
-  },
-  {
-    id: '8',
-    name: 'Accessories',
-    description: 'Cases, Cables & More',
-    icon: '🔌',
-    color: '#64748B',
-    gradient: ['#64748B', '#94A3B8'] as [string, string],
-    items: '203 products',
-    isFeatured: false,
-  },
-];
+  // Default fallback
+  const defaultColors = [
+    '#6366F1', '#06B6D4', '#10B981', '#F59E0B', '#EF4444', 
+    '#8B5CF6', '#EC4899', '#14B8A6', '#F97316', '#3B82F6'
+  ];
+  const defaultIcon = '📦';
+  const colorIndex = categoryName.length % defaultColors.length;
+  
+  return {
+    icon: defaultIcon,
+    color: defaultColors[colorIndex]
+  };
+};
 
 export default function CategoriesScreen() {
   const [fontsLoaded] = useFonts({
     'Poppins-Regular': Poppins_400Regular,
+    'Poppins-Medium': Poppins_500Medium,
     'Poppins-SemiBold': Poppins_600SemiBold,
   });
   
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeFilter, setActiveFilter] = useState('all');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   
   const router = useRouter();
+  const { isDarkMode } = useTheme();
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch categories from API
+      const response = await apiService.getProducts({ 
+        group_by: 'category',
+        limit: 50 
+      });
+      
+      if (response && response.categories) {
+        setCategories(response.categories);
+      } else {
+        setCategories([]);
+      }
+      
+    } catch (error: any) {
+      console.error('Error fetching categories:', error);
+      
+      let errorMessage = 'Failed to load categories';
+      if (error.message && typeof error.message === 'string') {
+        errorMessage = error.message;
+      }
+      
+      Alert.alert('Error', errorMessage);
+      setCategories([]);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchCategories();
+  };
+
+  const handleCategoryPress = (categoryId: string, categoryName: string) => {
+    router.push(`/category/${categoryId}?name=${encodeURIComponent(categoryName)}` as any);
+  };
+
+  const CategoryGridItem: React.FC<CategoryGridItemProps> = ({ item, index, onPress, isDarkMode = false }) => {
+    const { icon, color } = getCategoryIcon(item.name);
+    
+    return (
+      <View style={styles.gridItemContainer}>
+        <TouchableOpacity 
+          style={[
+            styles.gridItem,
+            isDarkMode && styles.darkGridItem
+          ]}
+          activeOpacity={0.9}
+          onPress={() => onPress(item.id, item.name)}
+        >
+          <View style={[styles.gridIconContainer, { backgroundColor: `${color}15` }]}>
+            <Text style={[styles.gridIcon, { color }]}>{icon}</Text>
+          </View>
+        </TouchableOpacity>
+        <Text style={[
+          styles.gridName,
+          isDarkMode && styles.darkGridName
+        ]} numberOfLines={1}>
+          {item.name}
+        </Text>
+        {item.product_count !== undefined && (
+          <Text style={[
+            styles.productCount,
+            isDarkMode && styles.darkProductCount
+          ]}>
+            {item.product_count} {item.product_count === 1 ? 'product' : 'products'}
+          </Text>
+        )}
+      </View>
+    );
+  };
 
   if (!fontsLoaded) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text>Loading...</Text>
+      <View style={[styles.loadingContainer, isDarkMode && styles.darkLoadingContainer]}>
+        <ActivityIndicator size="large" color="#232CAD" />
+        <Text style={[styles.loadingText, isDarkMode && styles.darkLoadingText]}>Loading...</Text>
       </View>
     );
   }
 
-  // Filter categories based on search and active filter
-  const filteredCategories = CATEGORIES_DATA.filter(category => {
-    const matchesSearch = category.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         category.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = activeFilter === 'all' || 
-                         (activeFilter === 'featured' && category.isFeatured);
-    
-    return matchesSearch && matchesFilter;
-  });
-
-  const handleCategoryPress = (categoryId: string) => {
-    // Navigate to category details or products page
-    // use a string path and cast to any to satisfy the router's generated route types
-    router.push(`/category/${categoryId}` as unknown as any);
-  };
-
-  const FeaturedCategoryCard: React.FC<FeaturedCategoryCardProps> = ({ item, onPress }) => (
-    <TouchableOpacity 
-      style={styles.featuredCard}
-      activeOpacity={0.9}
-      onPress={() => onPress(item.id)}
-    >
-      <LinearGradient
-        colors={item.gradient}
-        style={styles.featuredGradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <View style={styles.featuredContent}>
-          <View style={styles.featuredIconContainer}>
-            <Text style={styles.featuredIcon}>{item.icon}</Text>
-          </View>
-          <View style={styles.featuredTextContainer}>
-            <Text style={styles.featuredName}>{item.name}</Text>
-            <Text style={styles.featuredDescription}>{item.description}</Text>
-            <Text style={styles.featuredItems}>{item.items}</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={24} color="#FFFFFF" style={styles.chevron} />
+  if (loading && !refreshing) {
+    return (
+      <SafeAreaView style={[styles.safeArea, isDarkMode && styles.darkSafeArea]}>
+        <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
+        <View style={[styles.header, isDarkMode && styles.darkHeader]}>
+          <TouchableOpacity 
+            style={[styles.backButton, isDarkMode && styles.darkBackButton]}
+            onPress={() => router.back()}
+          >
+            <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#FFFFFF" : "#000000"} />
+          </TouchableOpacity>
+          <Text style={[styles.headerTitle, isDarkMode && styles.darkHeaderTitle]}>Categories</Text>
+          <View style={styles.headerRightPlaceholder} />
         </View>
-      </LinearGradient>
-    </TouchableOpacity>
-  );
-
-  const RegularCategoryCard: React.FC<RegularCategoryCardProps> = ({ item, onPress }) => (
-    <TouchableOpacity 
-      style={styles.regularCard}
-      activeOpacity={0.9}
-      onPress={() => onPress(item.id)}
-    >
-      <LinearGradient
-        colors={['#FFFFFF', '#F8FAFC']}
-        style={styles.regularGradient}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-      >
-        <View style={[styles.regularIconContainer, { backgroundColor: `${item.color}15` }]}>
-          <Text style={[styles.regularIcon, { color: item.color }]}>{item.icon}</Text>
+        <View style={[styles.loadingContent, isDarkMode && styles.darkLoadingContent]}>
+          <ActivityIndicator size="large" color="#232CAD" />
+          <Text style={[styles.loadingContentText, isDarkMode && styles.darkLoadingContentText]}>
+            Loading categories...
+          </Text>
         </View>
-        <View style={styles.regularTextContainer}>
-          <Text style={styles.regularName}>{item.name}</Text>
-          <Text style={styles.regularDescription}>{item.description}</Text>
-          <Text style={styles.regularItems}>{item.items}</Text>
-        </View>
-        <View style={styles.arrowContainer}>
-          <Ionicons name="chevron-forward" size={20} color="#64748B" />
-        </View>
-      </LinearGradient>
-    </TouchableOpacity>
-  );
+      </SafeAreaView>
+    );
+  }
 
-  const FilterButton: React.FC<FilterButtonProps> = ({ label, value, isActive, onPress }) => (
-    <TouchableOpacity
-      style={[styles.filterButton, isActive && styles.activeFilterButton]}
-      onPress={() => onPress(value)}
-    >
-      <Text style={[styles.filterButtonText, isActive && styles.activeFilterButtonText]}>
-        {label}
-      </Text>
-    </TouchableOpacity>
-  );
-
-  const handleFilterPress = (filterValue: string) => {
-    setActiveFilter(filterValue);
-  };
+  // Group categories into rows of 3
+  const groupedCategories = [];
+  for (let i = 0; i < categories.length; i += 3) {
+    groupedCategories.push(categories.slice(i, i + 3));
+  }
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+    <SafeAreaView style={[styles.safeArea, isDarkMode && styles.darkSafeArea]}>
+      <StatusBar barStyle={isDarkMode ? "light-content" : "dark-content"} />
       
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, isDarkMode && styles.darkHeader]}>
         <TouchableOpacity 
-          style={styles.backButton}
+          style={[styles.backButton, isDarkMode && styles.darkBackButton]}
           onPress={() => router.back()}
         >
-          <Ionicons name="chevron-back" size={24} color="#000000" />
+          <Ionicons name="chevron-back" size={24} color={isDarkMode ? "#FFFFFF" : "#000000"} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Categories</Text>
-        <TouchableOpacity style={styles.cartButton}>
-          <Ionicons name="cart-outline" size={24} color="#000000" />
-          <View style={styles.cartBadge}>
-            <Text style={styles.cartBadgeText}>3</Text>
-          </View>
-        </TouchableOpacity>
+        <Text style={[styles.headerTitle, isDarkMode && styles.darkHeaderTitle]}>Categories</Text>
+        <View style={styles.headerRightPlaceholder} />
       </View>
 
       <ScrollView 
-        style={styles.scrollView}
+        style={[styles.scrollView, isDarkMode && styles.darkScrollView]}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={isDarkMode ? '#BB86FC' : '#232CAD'}
+          />
+        }
       >
-        {/* Search Section */}
-        <View style={styles.searchSection}>
-          <View style={styles.searchContainer}>
-            <Ionicons name="search" size={20} color="#64748B" style={styles.searchIcon} />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search categories..."
-              placeholderTextColor="#94A3B8"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity onPress={() => setSearchQuery('')}>
-                <Ionicons name="close-circle" size={20} color="#94A3B8" />
-              </TouchableOpacity>
-            )}
+        {/* Frame 623: "All Categories" Header */}
+        <View style={styles.sectionHeaderFrame}>
+          <Text style={[styles.sectionTitle, isDarkMode && styles.darkSectionTitle]}>
+            All Categories
+          </Text>
+          {categories.length > 0 && (
+            <Text style={[styles.categoryCount, isDarkMode && styles.darkCategoryCount]}>
+              {categories.length} categories
+            </Text>
+          )}
+        </View>
+
+        {/* Categories Grid */}
+        {categories.length > 0 ? (
+          <View style={styles.gridContainer}>
+            {groupedCategories.map((row, rowIndex) => (
+              <View key={rowIndex} style={styles.gridRow}>
+                {row.map((category, colIndex) => (
+                  <CategoryGridItem 
+                    key={category.id}
+                    item={category}
+                    index={rowIndex * 3 + colIndex}
+                    onPress={handleCategoryPress}
+                    isDarkMode={isDarkMode}
+                  />
+                ))}
+                {/* Fill empty spots if row has less than 3 items */}
+                {row.length < 3 && (
+                  Array.from({ length: 3 - row.length }).map((_, index) => (
+                    <View key={`empty-${index}`} style={styles.emptyGridItem} />
+                  ))
+                )}
+              </View>
+            ))}
           </View>
-        </View>
-
-        {/* Filter Section */}
-        <View style={styles.filterSection}>
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filterScrollContent}
-          >
-            <FilterButton 
-              label="All" 
-              value="all" 
-              isActive={activeFilter === 'all'} 
-              onPress={handleFilterPress}
-            />
-            <FilterButton 
-              label="Featured" 
-              value="featured" 
-              isActive={activeFilter === 'featured'} 
-              onPress={handleFilterPress}
-            />
-            <FilterButton 
-              label="Popular" 
-              value="popular" 
-              isActive={activeFilter === 'popular'} 
-              onPress={handleFilterPress}
-            />
-            <FilterButton 
-              label="New" 
-              value="new" 
-              isActive={activeFilter === 'new'} 
-              onPress={handleFilterPress}
-            />
-          </ScrollView>
-        </View>
-
-        {/* Featured Categories */}
-        {filteredCategories.filter(cat => cat.isFeatured).length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Featured Categories</Text>
-            <FlatList
-              data={filteredCategories.filter(cat => cat.isFeatured)}
-              renderItem={({ item }) => (
-                <FeaturedCategoryCard 
-                  item={item} 
-                  onPress={handleCategoryPress}
-                />
-              )}
-              keyExtractor={(item: CategoryItem) => item.id}
-              scrollEnabled={false}
-              contentContainerStyle={styles.featuredList}
-            />
+        ) : (
+          <View style={[styles.emptyContainer, isDarkMode && styles.darkEmptyContainer]}>
+            <Text style={[styles.emptyIcon, isDarkMode && styles.darkEmptyIcon]}>📂</Text>
+            <Text style={[styles.emptyTitle, isDarkMode && styles.darkEmptyTitle]}>
+              No Categories Found
+            </Text>
+            <Text style={[styles.emptyMessage, isDarkMode && styles.darkEmptyMessage]}>
+              No categories available at the moment.
+            </Text>
+            <TouchableOpacity 
+              style={[styles.retryButton, isDarkMode && styles.darkRetryButton]}
+              onPress={fetchCategories}
+            >
+              <Text style={[styles.retryText, isDarkMode && styles.darkRetryText]}>
+                Retry
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
-
-        {/* All Categories */}
-        <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>All Categories</Text>
-            <Text style={styles.sectionCount}>{filteredCategories.length} categories</Text>
-          </View>
-          <FlatList
-            data={filteredCategories}
-            renderItem={({ item }) => (
-              <RegularCategoryCard 
-                item={item} 
-                onPress={handleCategoryPress}
-              />
-            )}
-            keyExtractor={(item: CategoryItem) => item.id}
-            scrollEnabled={false}
-            contentContainerStyle={styles.regularList}
-          />
-        </View>
 
         {/* Bottom Spacer */}
         <View style={styles.bottomSpacer} />
@@ -362,6 +315,7 @@ export default function CategoriesScreen() {
 }
 
 const styles = StyleSheet.create({
+  // Light mode styles
   safeArea: {
     flex: 1,
     backgroundColor: '#FFFFFF',
@@ -370,232 +324,233 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#FFFFFF',
+  },
+  loadingText: {
+    fontFamily: 'Poppins-Regular',
+    fontSize: 16,
+    color: '#666666',
+    marginTop: 16,
+  },
+  loadingContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingContentText: {
+    fontFamily: 'Poppins-Regular',
+    fontSize: 16,
+    color: '#666666',
+    marginTop: 16,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
     paddingVertical: 16,
     backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#F1F5F9',
   },
   backButton: {
-    padding: 8,
-  },
-  headerTitle: {
-    fontFamily: 'Poppins-SemiBold',
-    fontSize: 20,
-    color: '#000000',
-  },
-  cartButton: {
-    padding: 8,
-    position: 'relative',
-  },
-  cartBadge: {
-    position: 'absolute',
-    top: 4,
-    right: 4,
-    backgroundColor: '#EF4444',
-    borderRadius: 10,
-    width: 16,
-    height: 16,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#F3F4F6',
   },
-  cartBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontFamily: 'Poppins-SemiBold',
+  headerTitle: {
+    fontFamily: 'Poppins-Medium',
+    fontSize: 18,
+    color: '#000000',
+  },
+  headerRightPlaceholder: {
+    width: 40,
+    height: 40,
   },
   scrollView: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
   },
   scrollContent: {
-    paddingBottom: 20,
-  },
-  searchSection: {
-    paddingHorizontal: 24,
-    paddingVertical: 16,
-  },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#F8FAFC',
-    borderRadius: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
-  },
-  searchIcon: {
-    marginRight: 12,
-  },
-  searchInput: {
-    flex: 1,
-    fontFamily: 'Poppins-Regular',
-    fontSize: 16,
-    color: '#000000',
-  },
-  filterSection: {
-    paddingHorizontal: 24,
-    paddingVertical: 8,
-  },
-  filterScrollContent: {
-    gap: 12,
-  },
-  filterButton: {
     paddingHorizontal: 20,
-    paddingVertical: 10,
-    backgroundColor: '#F8FAFC',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#E2E8F0',
+    paddingTop: 16,
   },
-  activeFilterButton: {
-    backgroundColor: '#232CAD',
-    borderColor: '#232CAD',
-  },
-  filterButtonText: {
-    fontFamily: 'Poppins-Regular',
-    fontSize: 14,
-    color: '#64748B',
-  },
-  activeFilterButtonText: {
-    color: '#FFFFFF',
-    fontFamily: 'Poppins-SemiBold',
-  },
-  section: {
-    marginTop: 24,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    marginBottom: 16,
+  // Frame 623: All Categories Header
+  sectionHeaderFrame: {
+    width: '100%',
+    marginBottom: 24,
   },
   sectionTitle: {
-    fontFamily: 'Poppins-SemiBold',
-    fontSize: 20,
-    color: '#000000',
+    fontFamily: 'Poppins-Medium',
+    fontWeight: '500',
+    fontSize: 18,
+    lineHeight: 24,
+    letterSpacing: 0.2,
+    color: '#0C1A30',
   },
-  sectionCount: {
+  categoryCount: {
     fontFamily: 'Poppins-Regular',
     fontSize: 14,
-    color: '#64748B',
+    color: '#666666',
+    marginTop: 4,
   },
-  featuredList: {
-    paddingHorizontal: 24,
-    gap: 16,
+  // Frame 650: Grid Container
+  gridContainer: {
+    width: '100%',
   },
-  featuredCard: {
-    borderRadius: 20,
-    overflow: 'hidden',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  featuredGradient: {
-    padding: 20,
-  },
-  featuredContent: {
+  gridRow: {
     flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 32,
+    width: '100%',
   },
-  featuredIconContainer: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  gridItemContainer: {
+    alignItems: 'center',
+    width: (width - 60) / 3,
+  },
+  gridItem: {
+    width: '100%',
+    height: 110,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginBottom: 8,
+  },
+  emptyGridItem: {
+    width: (width - 60) / 3,
+  },
+  gridIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
   },
-  featuredIcon: {
+  gridIcon: {
     fontSize: 28,
   },
-  featuredTextContainer: {
-    flex: 1,
-  },
-  featuredName: {
-    fontFamily: 'Poppins-SemiBold',
-    fontSize: 18,
-    color: '#FFFFFF',
-    marginBottom: 4,
-  },
-  featuredDescription: {
-    fontFamily: 'Poppins-Regular',
+  gridName: {
+    fontFamily: 'Poppins-Medium',
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginBottom: 4,
-  },
-  featuredItems: {
-    fontFamily: 'Poppins-Regular',
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.7)',
-  },
-  chevron: {
-    opacity: 0.8,
-  },
-  regularList: {
-    paddingHorizontal: 24,
-    gap: 12,
-  },
-  regularCard: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#F1F5F9',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  regularGradient: {
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  regularIconContainer: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  regularIcon: {
-    fontSize: 20,
-  },
-  regularTextContainer: {
-    flex: 1,
-  },
-  regularName: {
-    fontFamily: 'Poppins-SemiBold',
-    fontSize: 16,
-    color: '#000000',
+    color: '#0C1A30',
+    textAlign: 'center',
+    width: '100%',
     marginBottom: 2,
   },
-  regularDescription: {
+  productCount: {
     fontFamily: 'Poppins-Regular',
     fontSize: 12,
-    color: '#64748B',
-    marginBottom: 4,
+    color: '#666666',
+    textAlign: 'center',
+    width: '100%',
   },
-  regularItems: {
+  // Empty state
+  emptyContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 60,
+    paddingHorizontal: 20,
+  },
+  emptyIcon: {
+    fontSize: 64,
+    marginBottom: 16,
+  },
+  emptyTitle: {
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 20,
+    color: '#000000',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  emptyMessage: {
     fontFamily: 'Poppins-Regular',
-    fontSize: 11,
-    color: '#94A3B8',
+    fontSize: 16,
+    color: '#666666',
+    textAlign: 'center',
+    marginBottom: 24,
   },
-  arrowContainer: {
-    padding: 4,
+  retryButton: {
+    backgroundColor: '#232CAD',
+    borderRadius: 25,
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+  },
+  retryText: {
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 16,
+    color: '#FFFFFF',
   },
   bottomSpacer: {
     height: 20,
+  },
+
+  // Dark mode styles
+  darkSafeArea: {
+    backgroundColor: '#121212',
+  },
+  darkLoadingContainer: {
+    backgroundColor: '#121212',
+  },
+  darkLoadingText: {
+    color: '#CCCCCC',
+  },
+  darkLoadingContent: {
+    backgroundColor: '#121212',
+  },
+  darkLoadingContentText: {
+    color: '#CCCCCC',
+  },
+  darkHeader: {
+    backgroundColor: '#1E1E1E',
+    borderBottomColor: '#333333',
+  },
+  darkBackButton: {
+    backgroundColor: '#2D2D2D',
+  },
+  darkHeaderTitle: {
+    color: '#FFFFFF',
+  },
+  darkScrollView: {
+    backgroundColor: '#121212',
+  },
+  darkSectionTitle: {
+    color: '#FFFFFF',
+  },
+  darkCategoryCount: {
+    color: '#AAAAAA',
+  },
+  darkGridItem: {
+    backgroundColor: '#2D2D2D',
+    borderColor: '#444444',
+  },
+  darkGridName: {
+    color: '#FFFFFF',
+  },
+  darkProductCount: {
+    color: '#AAAAAA',
+  },
+  darkEmptyContainer: {
+    backgroundColor: '#121212',
+  },
+  darkEmptyIcon: {
+    color: '#AAAAAA',
+  },
+  darkEmptyTitle: {
+    color: '#FFFFFF',
+  },
+  darkEmptyMessage: {
+    color: '#AAAAAA',
+  },
+  darkRetryButton: {
+    backgroundColor: '#BB86FC',
+  },
+  darkRetryText: {
+    color: '#000000',
   },
 });

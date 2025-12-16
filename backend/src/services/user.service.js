@@ -8,9 +8,6 @@ async registerUser(email, password, username, role) {
         const connection = await pool.getConnection();
         try {
             await connection.beginTransaction();
-console.log("Registering user with email:", email, "and username:", username);  
-
-console.log("Checking if user already exists with email:", email, "or username:", username);    
 
             // Check if user already exists
             const [existingUsers] = await connection.query(
@@ -18,67 +15,58 @@ console.log("Checking if user already exists with email:", email, "or username:"
                 [email, username]
             );
 
+            // @ts-ignore
             if (existingUsers.length > 0) {
                 throw new Error('User with this email or username already exists');
-         }
+            }
 
             // Hash password
             const salt = await bcrypt.genSalt(10);
-
-           
             const passwordHash = await bcrypt.hash(password, salt);
 
             // Create user
-
             const userId = uuidv4();
-
-           
             await connection.query(
                 'INSERT INTO auth_users (id, email, password_hash, username) VALUES (?, ?, ?, ?)',
                 [userId, email, passwordHash, username]
             );
 
-            // Create empty user profile
+            // Create profile
             await connection.query(
                 'INSERT INTO auth_user_profile (user_id) VALUES (?)',
                 [userId]
             );
 
-            
-                 // Get role ID
+            // Get role ID
             const [roles] = await connection.query(
                 'SELECT id FROM auth_roles WHERE name = ?',
                 [role]
             );
 
-          
+            // @ts-ignore
+            if (roles.length === 0) {
+                throw new Error('Role not found');
+            }
 
             const roleId = roles[0].id;
 
+            // Assign role
+            await connection.query(
+                'INSERT INTO auth_users_roles (user_id, role_id) VALUES (?, ?)',
+                [userId, roleId]
+            );
 
-            
-            // Add role to user
-     
- // Insert the new role
-        await connection.query(
-            'INSERT INTO auth_users_roles (user_id, role_id) VALUES (?, ?)',
-            [userId, roleId]
-        );
-           
             await connection.commit();
-             console.log("commiting the transaction of registering user")
             return userId;
         } catch (error) {
-            console.log("hey dude that didnt work  , Techaven is rolling back")
             await connection.rollback();
             throw error;
         } finally {
-            console.log("done")
             connection.release();
         }
     }
 
-async loginUser(email, password) {
+    async loginUser(email, password) {
         try {
             // Get user with roles
             const [users] = await pool.query(`
@@ -90,110 +78,62 @@ async loginUser(email, password) {
                 GROUP BY u.id
             `, [email]);
 
-            if (users[0].length === 0) {
-                throw new Error('Invalid credentials');
-            }
-
-            const user = users[0];
-
-            // Verify password
-            const isValidPassword = await bcrypt.compare(password, user.password_hash);
-            if (!isValidPassword) {
-                throw new Error('Invalid credentials');
-            }
-
-            // Create token
-            const token = jwt.sign(
-                { 
-                    id: user.id,
-                    email: user.email,
-                    roles: user.roles ? user.roles.split(',') : []
-                },
-                process.env.JWT_SECRET || 'your_jwt_secret_key',
-                { expiresIn: '24h' }
-            );
-
-            // Don't send password hash to client
-            delete user.password_hash;
-
-            return { token, user };
-        } catch (error) {
-            throw error;
+        // @ts-ignore
+        if (users.length === 0) {
+            throw new Error('Invalid credentials');
         }
+
+        const user = users[0];
+
+        // Verify password
+        const isValidPassword = await bcrypt.compare(password, user.password_hash);
+        if (!isValidPassword) {
+            throw new Error('Invalid credentials');
+        }
+
+        // Create token
+        const token = jwt.sign(
+            {
+                id: user.id,
+                email: user.email,
+                roles: user.roles ? user.roles.split(',') : []
+            },
+            process.env.JWT_SECRET || 'your_jwt_secret_key',
+            { expiresIn: '24h' }
+        );
+
+        delete user.password_hash;
+        return { token, user };
     }
 
-async getUserById(userId) {
-    const db = await pool.getConnection();
+    async getUserById(id) {
+        try {
+            const [users] = await pool.query(`
+                SELECT u.*, 
+                       GROUP_CONCAT(DISTINCT r.name) as roles,
+                       up.full_name, up.phone, up.dob, up.locale
+                FROM auth_users u
+                LEFT JOIN auth_users_roles ur ON u.id = ur.user_id
+                LEFT JOIN auth_roles r ON ur.role_id = r.id
+                LEFT JOIN auth_user_profile up ON u.id = up.user_id
+                WHERE u.id = ?
+                GROUP BY u.id
+            `, [id]);
 
-    
-    console.log("user id in user contro ",userId)
-    db.beginTransaction;
-    try {
-            const [users] = await db.query(`
-                SELECT *
-                FROM auth_users
-                WHERE id = ?
-            `, [userId]);
-
-              console.log("user id in user contro ",users)
-
-            if (users[0].length === 0) return null;
+        // @ts-ignore
+        if (users.length === 0) return null;
 
             const user = users[0];
             delete user.password_hash;
             user.roles = user.roles ? user.roles.split(',') : [];
-db.commit;
+
             return user;
         } catch (error) {
-         db.rollback;
             throw new Error('Failed to fetch user');
-        }
-        finally{
-            db.release;
         }
     }
 
-    async getAllSellers() {
-               try {
-            const [users] = await pool.query(`
-                SELECT *
-                FROM auth_users au LEFT JOIN auth_users_roles aur ON au.id = aur.user_id
-                LEFT JOIN auth_roles ar ON aur.role_id = ar.id
-                WHERE ar.name = 'seller'
-            `, []);
-
-              console.log("Sellers  ",users)
-
-            return users;
-        } catch (error) {
-            throw new Error('Failed to fetch user');
-        }
-
-
-
-    }
-
-       async getAllBuyers() {
-               try {
-            const [users] = await pool.query(`
-                SELECT *
-                FROM auth_users au LEFT JOIN auth_users_roles aur ON au.id = aur.user_id
-                LEFT JOIN auth_roles ar ON aur.role_id = ar.id
-                WHERE ar.name = 'buyer'
-            `, []);
-
-              console.log("buyers  ",users)
-
-            return users;
-        } catch (error) {
-            throw new Error('Failed to fetch user');
-        }
-
-
-
-    }
-
-async getAllUsers() {
+       async getAllUsers() {
         console.log("Fetching all users");
         try {
             const [users] = await pool.query(`
@@ -211,59 +151,30 @@ async getAllUsers() {
 
            
 
-            return users;
-        } catch (error) {
-            throw new Error('Failed to fetch user');
-        }
+        return users;
     }
 
-    
-
-async deleteUser(user_id) {
-    const db = await pool.getConnection();
-    try {
-        await db.beginTransaction();
-
-        // Delete user roles
-        const result =  await db.query(
-            'DELETE FROM auth_users WHERE id = ?',
-            [user_id]
-        );
-        console.log("Deleted a user results :", result);
-    } catch (error) {
-        await db.rollback();
-        throw new Error('Failed to delete user roles');
-    } finally {
-        db.release();
-    }
-}
-        
-        
-async updateUserProfile(user_id, data) {
-
-        console.log("Updating profile for user id:", user_id, "with data:", data);
+    async updateUserProfile(userId, data) {
         try {
             const [result] = await pool.query(`
                 UPDATE auth_user_profile
                 SET full_name = COALESCE(?, full_name),
                     phone = COALESCE(?, phone),
+                    dob = COALESCE(?, dob),
                     locale = COALESCE(?, locale)
                 WHERE user_id = ?
             `, [
                 data.full_name,
                 data.phone,
+                data.dob,
                 data.locale,
-                data.user_id
+                userId
             ]);
-            console.log("Update result:", result);
 
-            return true;
-        } catch (error) {
-            throw new Error('Failed to update user profile');
-        }
+        return true;
     }
 
-async changePassword(userId, oldPassword, newPassword) {
+    async changePassword(userId, oldPassword, newPassword) {
         try {
             // Get current password hash
             const [users] = await pool.query(
@@ -271,67 +182,54 @@ async changePassword(userId, oldPassword, newPassword) {
                 [userId]
             );
 
-            if (users[0].length === 0) {
-                throw new Error('User not found');
-            }
-
-            // Verify old password
-            const isValidPassword = await bcrypt.compare(oldPassword, users[0].password_hash);
-            if (!isValidPassword) {
-                throw new Error('Current password is incorrect');
-            }
-
-            // Hash new password
-            const salt = await bcrypt.genSalt(10);
-            const newPasswordHash = await bcrypt.hash(newPassword, salt);
-
-            // Update password
-            await pool.query(
-                'UPDATE auth_users SET password_hash = ? WHERE id = ?',
-                [newPasswordHash, userId]
-            );
-
-            return true;
-        } catch (error) {
-            throw error;
+        // @ts-ignore
+        if (users.length === 0) {
+            throw new Error('User not found');
         }
+
+        // Verify old password
+        const isValidPassword = await bcrypt.compare(oldPassword, users[0].password_hash);
+        if (!isValidPassword) {
+            throw new Error('Current password is incorrect');
+        }
+
+        // Hash new password
+        const salt = await bcrypt.genSalt(10);
+        const newPasswordHash = await bcrypt.hash(newPassword, salt);
+
+        // Update
+        await pool.query(
+            'UPDATE auth_users SET password_hash = ? WHERE id = ?',
+            [newPasswordHash, userId]
+        );
+
+        return true;
     }
 
 async addUserRole(userId, roleName) {
         const connection = await pool.getConnection();
-      
         try {
             await connection.beginTransaction();
 
-          
             // Get role ID
             const [roles] = await connection.query(
                 'SELECT id FROM auth_roles WHERE name = ?',
                 [roleName]
             );
 
-            if (roles[0].length === 0) {
-              
+            // @ts-ignore
+            if (roles.length === 0) {
                 throw new Error('Role not found');
             }
-            
 
             const roleId = roles[0].id;
 
-
-            
-            // Add role to user
-     
- // Insert the new role
-        await connection.query(
-            'INSERT INTO auth_users_roles (user_id, role_id) VALUES (?, ?)',
-            [userId, roleId]
-        );
-          
-         
+            await connection.query(
+                'INSERT INTO auth_users_roles (user_id, role_id) VALUES (?, ?)',
+                [userId, roleId]
+            );
 
             await connection.commit();
-               console.log("Techaven didi it ");
             return true;
         } catch (error) {
             await connection.rollback();

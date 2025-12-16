@@ -13,17 +13,20 @@ export default function Screen4() {
   // Load Zalando fonts
   const [fontsLoaded] = useFonts({
     'Zalando Sans Expanded': require('@/assets/fonts/ZalandoSans-Expanded.ttf'),
-    //'Zalando Sans': require('@/assets/fonts/ZalandoSans-Regular.ttf'),
-    //'Zalando Sans Bold': require('@/assets/fonts/ZalandoSans-Bold.ttf'),
   });
 
   const handleBack = () => {
     router.back(); // Go back to previous screen
   };
 
-  // ADDED: Handle register navigation
-  const handleRegister = () => {
-    router.push('/auth/Register');
+  // Handle login navigation
+  const handleLogin = () => {
+    router.push('/auth/Login');
+  };
+
+  // Handle phone login navigation
+  const handlePhoneLogin = () => {
+    router.push('/auth/phoneNumber');
   };
 
   // Show loading or fallback until fonts are loaded
@@ -50,15 +53,18 @@ export default function Screen4() {
           <Text style={styles.backButtonText}>‹ Back</Text>
         </TouchableOpacity>
 
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          {/* Logo */}
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Logo - Reduced space from top */}
           <Image
             source={require('@/assets/images/logo.png')}
             style={styles.logo}
             resizeMode="contain"
           />
 
-          {/* Center Image */}
+          {/* Center Image - Increased height */}
           <Image
             source={require('@/assets/images/screen4.png')}
             style={styles.centerImage}
@@ -83,26 +89,23 @@ export default function Screen4() {
               </View>
             </TouchableOpacity>
 
-            {/* Email Auth Option */}
-            <TouchableOpacity style={styles.authOption}>
-              <Text style={styles.authText}>Email</Text>
-            </TouchableOpacity>
-
-            {/* ADDED: Register Option */}
+            {/* Login Option */}
             <TouchableOpacity 
               style={styles.authOption}
-              onPress={handleRegister}
+              onPress={handleLogin}
             >
-              <Text style={styles.authText}>Create Account</Text>
+              <Text style={styles.authText}>Login</Text>
             </TouchableOpacity>
 
-            {/* Phone Auth Option */}
-            <TouchableOpacity 
-              style={styles.authOption}
-              onPress={() => router.push('/auth/phoneNumber')}
-            >
-              <Text style={styles.authText}>Or login with Phone Number</Text>
-            </TouchableOpacity>
+            {/* Phone Login Text with blue link */}
+            <View style={styles.phoneOptionContainer}>
+              <Text style={styles.phoneText}>
+                Or login with{' '}
+                <Text style={styles.phoneLink} onPress={handlePhoneLogin}>
+                  Phone Number
+                </Text>
+              </Text>
+            </View>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -123,23 +126,14 @@ const styles = StyleSheet.create({
     width: width, 
     height: height 
   },
-  backgroundShape: { 
-    position: 'absolute', 
-    width: width, 
-    height: height 
-  },
   // Back Button Styles
   backButton: {
     position: 'absolute',
     top: Platform.OS === 'ios' ? 50 : 30,
     left: 20,
     zIndex: 10,
-   
-    
     justifyContent: 'center',
     alignItems: 'center',
-    
-    borderColor: '#E0E0E0',
   },
   backButtonText: {
     fontFamily: 'Poppins-Regular',
@@ -152,19 +146,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
-    paddingTop: 100, // Increased to accommodate back button
-    paddingBottom: 40,
+    paddingTop: 40, // Further reduced from 60 to 40
+    paddingBottom: 20,
   },
   logo: {
     width: 180,
     height: 60,
-    marginBottom: 20,
-    marginTop: 40,
+    marginBottom: 15, // Reduced from 20
+    marginTop: 0, // Removed margin top to bring logo closer to notification bar
   },
   centerImage: { 
-    width: width * 0.9, 
-    height: 300, 
-    marginBottom: 30 
+    width: width * 0.9, // Increased back to 90%
+    height: 320, // Increased from 280 to 320
+    marginBottom: 25, // Adjusted
   },
   description: {
     fontFamily: 'Zalando Sans Expanded',
@@ -175,13 +169,13 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#555',
     marginHorizontal: 20,
-    marginBottom: 40,
+    marginBottom: 30,
   },
   authOptionsContainer: {
     width: '100%',
     alignItems: 'center',
     gap: 16,
-    marginBottom: 30,
+    marginTop: 10,
   },
   authOption: {
     width: '100%',
@@ -211,10 +205,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#333',
   },
-  signInContainer: {
-    marginTop: 20,
+  // Phone option container
+  phoneOptionContainer: {
+    width: '100%',
+    maxWidth: 376,
+    marginTop: 10,
+    alignItems: 'center',
   },
-  signInText: {
+  phoneText: {
     fontFamily: 'Zalando Sans Expanded',
     fontWeight: '400',
     fontSize: 14,
@@ -222,9 +220,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#666',
   },
-  signInLink: {
+  phoneLink: {
     fontFamily: 'Zalando Sans Expanded',
-    color: '#007AFF',
     fontWeight: '600',
+    color: '#232CAD', // Blue color matching your app theme
+    textDecorationLine: 'underline',
   },
 });
