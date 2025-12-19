@@ -23,6 +23,7 @@
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
     "mysql2": "^3.15.3",
+    "nodemailer": "^7.0.11",
     "stripe": "^19.1.0",
     "uuid": "^9.0.1"
   },
@@ -35,7 +36,7 @@
     "@types/node": "^20.6.2",
     "@types/uuid": "^9.0.4",
     "jest": "^29.7.0",
-    "nodemon": "^3.0.1",
+    "nodemon": "^3.1.11",
     "ts-node": "^10.9.1",
     "typescript": "^5.2.2"
   }

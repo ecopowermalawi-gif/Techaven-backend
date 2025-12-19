@@ -13,19 +13,42 @@ const limiter = rateLimit({
     legacyHeaders: false, // Disable the `X-RateLimit-*` headers
     keyGenerator: ipKeyGenerator
 });
-
 // Login rate limiter - more strict for login attempts
+
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // limit each IP to 5 login attempts per window
+    max: 5, // Limit each IP to 5 login requests per windowMs
     message: {
         success: false,
-        message: 'Too many login attempts from this IP, please try again after 15 minutes'
+        message: 'Too many login attempts, please try again later'
     },
     standardHeaders: true,
-    legacyHeaders: false,
-    keyGenerator: (req) => ipKeyGenerator(req.ip || 'unknown')
+    legacyHeaders: false
 });
+
+
+const passwordResetLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 3, // Limit each IP to 3 reset requests per hour
+    message: {
+        success: false,
+        message: 'Too many password reset requests, please try again later'
+    },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
+const registerLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000, // 1 hour
+    max: 10, // Limit each IP to 10 registrations per hour
+    message: {
+        success: false,
+        message: 'Too many registration attempts, please try again later'
+    },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
 
 // API key rate limiter - for authenticated requests
 const apiKeyLimiter = rateLimit({
@@ -57,18 +80,7 @@ const uploadLimiter = rateLimit({
     keyGenerator: (req) => ipKeyGenerator(req.ip || 'unknown')
 });
 
-// Create rate limiter for password reset attempts
-const passwordResetLimiter = rateLimit({
-    windowMs: 60 * 60 * 1000, // 1 hour
-    max: 3, // limit each IP to 3 password reset attempts per hour
-    message: {
-        success: false,
-        message: 'Too many password reset attempts. Please try again later.'
-    },
-    standardHeaders: true,
-    legacyHeaders: false,
-    keyGenerator: (req) => ipKeyGenerator(req.ip || 'unknown')
-});
+
 
 /**
  * Creates a rate limiter with custom settings
@@ -94,8 +106,10 @@ const createEndpointLimiter = (windowMs, max, message) => {
 export {
     limiter,
     loginLimiter,
+    passwordResetLimiter, 
+    registerLimiter ,
     apiKeyLimiter,
     uploadLimiter,
-    passwordResetLimiter,
+   
     createEndpointLimiter
 };

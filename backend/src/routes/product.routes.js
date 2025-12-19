@@ -1,7 +1,7 @@
 import express from 'express';
 import productController from '../controllers/product.controller.js';
 import { auth, checkRole } from '../middleware/auth.js';
-import { validateRequest as validate, productValidationRules, paginationRules } from '../middleware/validation.js';
+import {  productValidationRules, paginationRules } from '../middleware/validation.js';
 import { uploadSingleFile } from '../middleware/upload.js';
 import { cacheMiddleware, invalidateCache } from '../middleware/cache.js';
 

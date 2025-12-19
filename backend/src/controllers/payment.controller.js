@@ -2,7 +2,7 @@ import Stripe from 'stripe';
 import pool from '../config/database.js';
 import { AppError } from '../utils/error.js';
 
-const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY; // Replace with your actual test key  
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY ||'sk_test_51SZYt3Gw8axsDWqh254AUU2OZxv5TYd52FRXGnlhSYfIGlxZXmQNny9mYr3XGg2QDJVh8BlHreR00a3jH3ypABSn00ADYe9WyH'; // Replace with your actual test key  
 const stripe = new Stripe(STRIPE_SECRET_KEY);
 
 const paymentController = {

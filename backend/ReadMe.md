@@ -51,7 +51,7 @@ npm run dev
 
 ### Base URL
 ```
-http://localhost:666/api
+http://localhost:963/api
 ```
 
 ### Authentication
@@ -63,7 +63,11 @@ Authorization: Bearer your-jwt-token
 ### Available Routes
 
 #### 1. Authentication & User Management
-```http
+```User
+
+
+```http request
+
 # Public Routes
 POST /user/register
 {
