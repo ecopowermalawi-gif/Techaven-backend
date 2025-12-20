@@ -1,21 +1,28 @@
+import { v4 as uuidv4 } from 'uuid';
 import pool from '../config/database.js';
-import type { Shop as ShopType } from '../types/database';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
-class Shop {
-    static async create({
-        seller_id,
-        name,
-        description,
-        category,
-        address
-    }) {
-        const [result] = await pool.query(
-            `INSERT INTO shops (
-                seller_id, name, description, category, 
-                address, status
-            ) VALUES (?, ?, ?, ?, ?, "pending")`,
-            [seller_id, name, description, category, address]
-        );
+
+//SELECT `id`, `user_id`, `business_name`, `registration_number`,
+//  `created_at`, `updated_at` FROM `catalog_sellers` WHERE 1
+class Shop {    
+    
+    //Shop CRUD Operations
+    async createShop(shopData) {
+        const connection =  await pool.getConnection();
+          const id = uuidv4();
+        try {
+             const {user_id , business_name, registration_number} = shopData;
+             const [result] = await connection.query(`INSERT INTO catalog_sellers (id, user_id, business_name, registration_number) 
+        VALUES (?, ?,?,?)`, [id,user_id, business_name, registration_number]);
+      
+            console.log("here comes the data ", result);
+
+        } catch (error) {
+            
+        }
 
         return this.findById(result.insertId);
     }
