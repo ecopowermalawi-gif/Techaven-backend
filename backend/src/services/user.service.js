@@ -7,46 +7,104 @@ class UserService {
     // Registration
     async registerUser(userData) {
         try {
+
+            console.log("hello here is the data i user service",userData );
             // Check if user exists
             const emailExists = await UserModel.checkEmailExists(userData.email);
             if (emailExists) {
                 throw new Error('User with this email already exists');
             }
+            console.log("checking email", emailExists);
 
             if (userData.username) {
                 const usernameExists = await UserModel.checkUsernameExists(userData.username);
                 if (usernameExists) {
+                    console.log("user email already existed ", usernameExists)
                     throw new Error('Username already taken');
                 }
             }
-
-            // Create user
-            console.log("---here user service ", userData);
+console.log("==== creting a user =====");
+            // Create user (inactive until email verified)
             const userId = await UserModel.createUser(userData);
+console.log("Here is the user id ", userId);
+            // Generate and send OTP
+            const otp = this.generateOTP();
 
-            console.log("here is user id ", userId);
+            console.log("here is he otp genertotped ",otp );
 
-            // Send welcome email
-            console.log("====sendiing email===");
+            await UserModel.storeOTP(userId, otp);
 
-         try {
-            const emailResponse =   await emailService.sendWelcomeEmail(userData.email, {
-                name: userData.username || userData.email.split('@')[0]
-            });
-            console.log("Eail response ", emailResponse);
-         } catch (error) {
-            console.log("Failed to verify email with error :",error);
-         }
-
-            console.log("Regigistering user with===");
-
+            console.log('stored OTP for user', userId)
+            await emailService.sendOTPEmail(userData.email, otp);
+console.log("seds the otp to emil d");
             return {
                 id: userId,
                 email: userData.email,
-                username: userData.username
+                username: userData.username,
+                message: 'User registered. Check your email for OTP to verify your account.'
             };
         } catch (error) {
             throw new Error(`Registration failed: ${error.message}`);
+        }
+    }
+
+    // OTP Generation (6-digit code)
+    generateOTP() {
+        return Math.floor(100000 + Math.random() * 900000).toString();
+    }
+
+    // Send OTP to email
+    async sendOTP(email) {
+        try {
+            // Check if user exists
+            const user = await UserModel.findUserByEmail(email);
+            if (!user) {
+                throw new Error('User not found');
+            }
+
+            // Generate and store OTP
+            const otp = this.generateOTP();
+            await UserModel.storeOTP(user.id, otp);
+            await emailService.sendOTPEmail(email, otp);
+
+            return {
+                success: true,
+                message: 'OTP sent to your email'
+            };
+        } catch (error) {
+            throw new Error(`Failed to send OTP: ${error.message}`);
+        }
+    }
+
+    // Verify OTP and activate account
+    async verifyOTP(userId, otp) {
+        try {
+            // Validate OTP
+            const isValid = await UserModel.validateOTP(userId, otp);
+            if (!isValid) {
+                throw new Error('Invalid or expired OTP');
+            }
+
+            // Clear used OTP
+            await UserModel.clearOTP(userId);
+
+            // Activate user account
+            await UserModel.updateUser(userId, { is_active: 1 });
+
+            // Get updated user
+            const user = await UserModel.findUserById(userId);
+
+            return {
+                success: true,
+                message: 'Email verified successfully. Account activated.',
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    username: user.username
+                }
+            };
+        } catch (error) {
+            throw new Error(`OTP verification failed: ${error.message}`);
         }
     }
 
@@ -66,6 +124,7 @@ class UserService {
 
             // Verify password
             const isValid = await bcrypt.compare(password, user.password_hash);
+
             if (!isValid) {
                 throw new Error('Invalid credentials');
             }
@@ -90,6 +149,7 @@ class UserService {
             throw new Error(`Login failed: ${error.message}`);
         }
     }
+
 
     // Token Refresh
     async refreshAccessToken(refreshToken) {
@@ -343,7 +403,7 @@ class UserService {
     }
 
     // Search and Filter
-    async searchUsers(searchTerm, filters = {}) {
+ async searchUsers(searchTerm, filters = {}) {
         try {
             const [users] = await pool.query(`
                 SELECT 

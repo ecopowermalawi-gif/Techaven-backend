@@ -7,13 +7,17 @@ import crypto from 'crypto';
 
 //SELECT `id`, `user_id`, `business_name`, `registration_number`,
 //  `created_at`, `updated_at` FROM `catalog_sellers` WHERE 1
-class Shop {    
+
+class ShopModel {    
     
     //Shop CRUD Operations
-    async createShop(shopData) {
+
+static async createNewShop(shopData) {
         const connection =  await pool.getConnection();
           const id = uuidv4();
-        try {
+          console.log("=== creating shop ==== with id", id, shopData);
+
+         try {
              const {user_id , business_name, registration_number} = shopData;
              const [result] = await connection.query(`INSERT INTO catalog_sellers (id, user_id, business_name, registration_number) 
         VALUES (?, ?,?,?)`, [id,user_id, business_name, registration_number]);
@@ -24,10 +28,10 @@ class Shop {
             
         }
 
-        return this.findById(result.insertId);
+        return shopData;
     }
 
-    static async findById(id) {
+    async findShopById(id) {
         const [shops] = await pool.query(
             `SELECT s.*, 
                     u.email as seller_email,
@@ -117,7 +121,7 @@ class Shop {
         };
     }
 
-    static async update(id, {
+     async update(id, {
         name,
         description,
         category,
@@ -152,7 +156,7 @@ class Shop {
 
         params.push(id);
         await pool.query(
-            `UPDATE shops SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+            `UPDATE catalog_sellers SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
             params
         );
 
@@ -173,19 +177,19 @@ class Shop {
 
         params.push(id);
         await pool.query(
-            `UPDATE shops SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
+            `UPDATE catalog_sellers SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
             params
         );
 
         return this.findById(id);
     }
 
-    static async delete(id) {
-        await pool.query('DELETE FROM shops WHERE id = ?', [id]);
+    async delete(id) {
+        await pool.query('DELETE FROM catalog_sellers WHERE id = ?', [id]);
         return true;
     }
 
-    static async getShopProducts(shopId, { 
+    async getShopProducts(shopId, { 
         page = 1, 
         limit = 10,
         category = null,
@@ -247,7 +251,7 @@ class Shop {
         };
     }
 
-    static async getShopOrders(shopId, { 
+    async getShopOrders(shopId, { 
         page = 1, 
         limit = 10,
         status = null
@@ -290,7 +294,7 @@ class Shop {
 
         const [{ total }] = await pool.query(
             `SELECT COUNT(DISTINCT o.id) as total
-             FROM orders o
+             FROM order_orders o
              INNER JOIN order_items oi ON o.id = oi.order_id
              INNER JOIN products p ON oi.product_id = p.id
              WHERE p.seller_id = ?` +
@@ -308,7 +312,7 @@ class Shop {
         };
     }
 
-    static async getShopStats(shopId, start_date = null, end_date = null) {
+    async getShopStats(shopId, start_date = null, end_date = null) {
         let query = `
             SELECT 
                 COUNT(DISTINCT o.id) as total_orders,
@@ -321,7 +325,7 @@ class Shop {
                     INNER JOIN products p ON pr.product_id = p.id
                     WHERE p.seller_id = ?
                 ) as average_rating
-            FROM orders o
+            FROM order_orders o
             INNER JOIN order_items oi ON o.id = oi.order_id
             INNER JOIN products p ON oi.product_id = p.id
             WHERE p.seller_id = ? AND o.status = 'completed'
@@ -348,10 +352,10 @@ class Shop {
                     COUNT(DISTINCT o.id) as order_count,
                     SUM(oi.quantity * oi.price) as total_revenue,
                     AVG(pr.rating) as average_rating
-             FROM shops s
+             FROM catalog_sellers s
              INNER JOIN products p ON s.id = p.seller_id
              INNER JOIN order_items oi ON p.id = oi.product_id
-             INNER JOIN orders o ON oi.order_id = o.id
+             INNER JOIN order_orders o ON oi.order_id = o.id
              LEFT JOIN product_reviews pr ON p.id = pr.product_id
              WHERE s.status = 'approved' AND o.status = 'completed'
              GROUP BY s.id
@@ -363,4 +367,4 @@ class Shop {
     }
 }
 
-export default Shop;
+export default ShopModel;

@@ -44,6 +44,19 @@ router.post(
     userController.resetPassword
 );
 
+// OTP routes
+router.post(
+    '/send-otp',
+    validate(userValidationRules.sendOTP),
+    userController.sendOTP
+);
+
+router.post(
+    '/verify-otp',
+    validate(userValidationRules.verifyOTP),
+    userController.verifyOTP
+);
+
 // Protected routes (require authentication)
 router.get(
     '/profile',

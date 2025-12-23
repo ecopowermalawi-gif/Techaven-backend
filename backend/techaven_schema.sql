@@ -13,9 +13,11 @@ CREATE TABLE IF NOT EXISTS auth_users (
   email VARCHAR(255) NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
   username VARCHAR(100),
+  otp VARCHAR(6),
+  otp_expires_at TIMESTAMP NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
-  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  is_active TINYINT(1) NOT NULL DEFAULT 0,
   UNIQUE KEY ux_users_email (email),
   UNIQUE KEY ux_users_username (username)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

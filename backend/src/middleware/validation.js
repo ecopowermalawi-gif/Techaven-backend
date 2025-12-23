@@ -255,6 +255,22 @@ export const userValidationRules = {
                 return true;
             })
     ],
+
+    sendOTP: [
+        body('email')
+            .isEmail().withMessage('Please provide a valid email')
+            .normalizeEmail()
+    ],
+
+    verifyOTP: [
+        body('userId')
+            .notEmpty().withMessage('User ID is required')
+            .isLength({ min: 36, max: 36 }).withMessage('Invalid user ID format'),
+        body('otp')
+            .notEmpty().withMessage('OTP is required')
+            .isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits')
+            .isNumeric().withMessage('OTP must contain only numbers')
+    ],
     
     addRole: [
         body('userId')

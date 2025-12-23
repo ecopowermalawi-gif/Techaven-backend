@@ -18,7 +18,7 @@ class UserModel {
             await connection.query(
                 `INSERT INTO auth_users (id, email, password_hash, username, is_active) 
                  VALUES (?, ?, ?, ?, ?)`,
-                [userId, userData.email, passwordHash, userData.username, 1]
+                [userId, userData.email, passwordHash, userData.username, 0]
             );
 
             // Create profile
@@ -30,7 +30,7 @@ class UserModel {
             // Assign role
             const [roles] = await connection.query(
                 'SELECT id FROM auth_roles WHERE name = ?',
-                [userData.role || 'user']
+                [userData.role || 'buyer']
             );
 
             if (roles.length > 0) {
@@ -338,6 +338,34 @@ class UserModel {
         }
     }
 
+   async updateUserRole(userId, roleName) {
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
+
+            const [roles] = await connection.query(
+                'SELECT id FROM auth_roles WHERE name = ?',
+                [roleName]
+            );
+
+            if (roles.length > 0) {
+                await connection.query(
+                    'UPDATE auth_users_roles SET  role_id = ? WHERE user_id = ?',
+                    [roles[0].id, userId]
+                );
+            }
+
+            await connection.commit();
+            return true;
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
+
+
     // Session Management
     async createSession(userId, sessionData = {}) {
         try {
@@ -364,7 +392,9 @@ class UserModel {
         }
     }
 
-    async findSessionById(sessionId) {
+
+
+async findSessionById(sessionId) {
         try {
             const [sessions] = await pool.query(`
                 SELECT s.*, u.email, u.username
@@ -635,6 +665,60 @@ class UserModel {
 
     generateRefreshToken() {
         return crypto.randomBytes(40).toString('hex');
+    }
+
+    // OTP Management
+    async storeOTP(userId, otp) {
+        try {
+            const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+            await pool.query(
+                'UPDATE auth_users SET otp = ?, otp_expires_at = ? WHERE id = ?',
+                [otp, expiresAt, userId]
+            );
+            return true;
+        } catch (error) {
+            throw new Error(`Failed to store OTP: ${error.message}`);
+        }
+    }
+
+    async validateOTP(userId, otp) {
+        try {
+            const [users] = await pool.query(
+                'SELECT otp, otp_expires_at FROM auth_users WHERE id = ?',
+                [userId]
+            );
+
+            if (users.length === 0) {
+                throw new Error('User not found');
+            }
+
+            const user = users[0];
+            
+            // Check if OTP exists and hasn't expired
+            if (!user.otp || user.otp !== otp) {
+                return false;
+            }
+
+            if (new Date() > new Date(user.otp_expires_at)) {
+                return false; // OTP has expired
+            }
+
+            return true;
+        } catch (error) {
+            throw new Error(`Failed to validate OTP: ${error.message}`);
+        }
+    }
+
+    async clearOTP(userId) {
+        try {
+            await pool.query(
+                'UPDATE auth_users SET otp = NULL, otp_expires_at = NULL WHERE id = ?',
+                [userId]
+            );
+            return true;
+        } catch (error) {
+            throw new Error(`Failed to clear OTP: ${error.message}`);
+        }
     }
 }
 

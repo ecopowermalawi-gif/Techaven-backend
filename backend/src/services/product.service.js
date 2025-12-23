@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import ProductModel from '../models/product.model.js';  
 import pool from '../config/database.js';
 
 class ProductService {
@@ -46,10 +47,6 @@ class ProductService {
             throw new Error('Error fetching products');
         }
     }
-
-
-
-
     
     async getProductById(id) {
         try {
@@ -74,49 +71,15 @@ class ProductService {
     }
 
     async createProduct(productData) {
-        const connection = await pool.getConnection();
-      console.log("here comes produc service", productData)
-        try {
-            await connection.beginTransaction();
+    try {
+console.log("creating a product in product services with data : ", productData);
+        const productRes = await ProductModel.create(productData);
+console.log("response from product creatinon ", productRes);
 
-            const productId = uuidv4();
-            await connection.query(`
-                INSERT INTO catalog_products (
-                    id, seller_id, sku, title, short_description, 
-                    long_description, price, currency, is_active
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `, [
-                productId,
-                productData.seller_id,
-                productData.sku,
-                productData.title,
-                productData.short_description,
-                productData.long_description,
-                productData.price,
-                productData.currency || 'MWK',
-                productData.is_active ?? 1
-            ]);
-
-            console.log("Inserted product with ID:", productId);
-            console.log("products data ", productData);
-            
-            if (productData.categories?.length) {
-                const categoryValues = productData.categories.map(cat => [productId, cat.id]);
-                await connection.query(`
-                    INSERT INTO catalog_product_categories (product_id, category_id)
-                    VALUES ?
-                `, [categoryValues]);
-            }
-
-            await connection.commit();
-            return productId;
-        } catch (error) {
-            console.log(error);
-            await connection.rollback();
-            throw new Error('Error creating product');
-        } finally {
-            connection.release();
-        }
+    } catch (error) {
+        console.log("error while creating the product", error)
+    } 
+    
     }
 
     async updateProduct(id, productData) {
@@ -243,18 +206,15 @@ class ProductService {
 
     async updateStock(productId, quantity) {
         try {
-            const [result] = await pool.query(`
-                UPDATE catalog_products 
-                SET stock = ?,
-                    updated_at = CURRENT_TIMESTAMP
-                WHERE id = ?
-            `, [quantity, productId]);
-
-            return result.affectedRows > 0;
-        } catch (error) {
-            throw new Error('Error updating product stock');
-        }
+           const updateResults =  await ProductModel.updateStock(productId, quantity);
+console.log(" Results from the updates", updateResults);
+}
+catch(error){
+    console.log("Here is the error", error);
+}
+finally{
+    console.log("");
+}
     }
 }
-
 export default new ProductService();

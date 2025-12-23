@@ -37,12 +37,8 @@ class EscrowService {
         };
     }
 
-    
-
-       // Get single escrow by ID
-
-
-       async getEscrowById(id) {
+        // Get single escrow by ID
+   async getEscrowById(id) {
           const db = await pool.getConnection();
           console.log("inside get Escrow service")
 
@@ -61,8 +57,6 @@ class EscrowService {
  
  
     }
-
-
 
     // Get Escrow
 

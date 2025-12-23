@@ -1,31 +1,53 @@
 import pool from '../config/database.js';
+import { v4 as uuidv4 } from 'uuid';
 
-class Product {
-    static async create({
-        seller_id,
-        sku,
-        title,
-        description,
-        price,
-        currency = 'USD',
-        stock,
-        category_id,
-        brand = null,
-        specifications = null,
-        image_url = null
-    }) {
-        const [result] = await pool.query(
-            `INSERT INTO products (
-                seller_id, sku, title, description, price, 
-                currency, stock, category_id, brand, specifications, 
-                image_url, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, "active")`,
-            [
-                seller_id, sku, title, description, price,
-                currency, stock, category_id, brand, JSON.stringify(specifications),
-                image_url
-            ]
-        );
+
+class ProductModel {
+    static async create(
+        productData) {
+                const connection = await pool.getConnection();
+      console.log("here comes produc service", productData)
+        try {
+            await connection.beginTransaction();
+
+            const productId = uuidv4();
+            await connection.query(`
+                INSERT INTO catalog_products (
+                    id, seller_id, sku, title, short_description, 
+                    long_description, price, currency, is_active
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `, [
+                productId,
+                productData.seller_id,
+                productData.sku,
+                productData.title,
+                productData.short_description,
+                productData.long_description || productData.short_description,
+                productData.price,
+                productData.currency || 'MWK',
+                productData.is_active ?? 1
+            ]);
+
+            console.log("Inserted product with ID:", productId);
+            console.log("products data ", productData);
+            
+            if (productData.categories?.length) {
+                const categoryValues = productData.categories.map(cat => [productId, cat.id]);
+                await connection.query(`
+                    INSERT INTO catalog_product_categories (product_id, category_id)
+                    VALUES ?
+                `, [categoryValues]);
+            }
+
+            await connection.commit();
+            return productId;
+        } catch (error) {
+            console.log(error);
+            await connection.rollback();
+            throw new Error('Error creating product');
+        } finally {
+            connection.release();
+        }
         return this.findById(result.insertId);
     }
 
@@ -115,70 +137,20 @@ class Product {
         };
     }
 
-    static async update(id, {
-        title,
-        description,
-        price,
-        stock,
-        category_id,
-        brand,
-        specifications,
-        image_url,
-        status
-    }) {
+    //SELECT `id`, `product_id`, `url`, `alt_text`, `sort_order`,
+    // `created_at` FROM `catalog_product_images` WHERE 1
+static async updateProductImage(productImageData) {
         const updates = [];
         const params = [];
-
-        if (title !== undefined) {
-            updates.push('title = ?');
-            params.push(title);
-        }
-
-        if (description !== undefined) {
-            updates.push('description = ?');
-            params.push(description);
-        }
-
-        if (price !== undefined) {
-            updates.push('price = ?');
-            params.push(price);
-        }
-
-        if (stock !== undefined) {
-            updates.push('stock = ?');
-            params.push(stock);
-        }
-
-        if (category_id !== undefined) {
-            updates.push('category_id = ?');
-            params.push(category_id);
-        }
-
-        if (brand !== undefined) {
-            updates.push('brand = ?');
-            params.push(brand);
-        }
-
-        if (specifications !== undefined) {
-            updates.push('specifications = ?');
-            params.push(JSON.stringify(specifications));
-        }
-
-        if (image_url !== undefined) {
-            updates.push('image_url = ?');
-            params.push(image_url);
-        }
-
-        if (status !== undefined) {
-            updates.push('status = ?');
-            params.push(status);
-        }
-
-        if (updates.length === 0) {
-            return this.findById(id);
-        }
-
-        params.push(id);
+const db = await pool.getConnection();
+db.beginTransaction();
+try {
+    const id = uuidv4();
+const results = await db.query(`INSERT INTO
+     catalog_product_images(id, product_id, url,alt_text, sort_order) VALUES(?,?,?,?,?)`, [id, productImageData.product_id, productImageData.url, productImageData.alt_text, productImageData.sort_order]);
+    } catch (error) {
+    console.log("prooduct images  insertion error ", error );
+}
         await pool.query(
             `UPDATE products SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE id = ?`,
             params
@@ -187,19 +159,31 @@ class Product {
         return this.findById(id);
     }
 
+    static async  updateProduct(product_id, url,alt_text){
+        const id =
+        await pool.query(`INSERT INTO catalog_product_images()`);
+    }
     static async delete(id) {
         await pool.query('DELETE FROM products WHERE id = ?', [id]);
         return true;
     }
 
-    static async updateStock(id, quantity, type = 'increment') {
+    static async updateStock(productId, quantity, type = 'increment') {
         const operation = type === 'increment' ? '+' : '-';
-        await pool.query(
-            `UPDATE products SET stock = stock ${operation} ? WHERE id = ?`,
-            [quantity, id]
-        );
-        return this.findById(id);
+           try {
+            const [result] = await pool.query(`
+                UPDATE catalog_products 
+                SET stock = ?,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            `, [quantity, productId]);
+
+            return result.affectedRows > 0;
+        } catch (error) {
+            throw new Error('Error updating product stock');
+        }
     }
+    
 
     static async findByCategory(categoryId, { page = 1, limit = 10 }) {
         const offset = (page - 1) * limit;
@@ -301,4 +285,4 @@ class Product {
     }
 }
 
-export default Product;
+export default ProductModel;

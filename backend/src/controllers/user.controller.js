@@ -4,7 +4,7 @@ class UserController {
     // Authentication
     async register(req, res) {
         try {
-            const { email, password, username, role = 'user', business_name } = req.body;
+            const { email, password, username, role = 'buyer', business_name } = req.body;
             
             const result = await userService.registerUser({
                 email,
@@ -16,11 +16,64 @@ class UserController {
 
             res.status(201).json({
                 success: true,
-                message: 'User registered successfully',
+                message: result.message || 'User registered successfully. Check email for OTP.',
                 data: result
             });
         } catch (error) {
             console.error('Registration error:', error);
+            res.status(400).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
+
+    async sendOTP(req, res) {
+        try {
+            const { email } = req.body;
+
+            if (!email) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Email is required'
+                });
+            }
+
+            const result = await userService.sendOTP(email);
+
+            res.json({
+                success: true,
+                message: result.message
+            });
+        } catch (error) {
+            console.error('Send OTP error:', error);
+            res.status(error.message.includes('not found') ? 404 : 500).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
+
+    async verifyOTP(req, res) {
+        try {
+            const { userId, otp } = req.body;
+
+            if (!userId || !otp) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'User ID and OTP are required'
+                });
+            }
+
+            const result = await userService.verifyOTP(userId, otp);
+
+            res.json({
+                success: true,
+                message: result.message,
+                data: result.user
+            });
+        } catch (error) {
+            console.error('OTP verification error:', error);
             res.status(400).json({
                 success: false,
                 message: error.message

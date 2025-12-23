@@ -1,6 +1,8 @@
 import  pool  from  '../config/database.js';
 import { AppError } from '../utils/error.js';
 import { v4 as uuidv4 } from 'uuid';
+import ShopModel from '../models/shop.model.js';
+
 class ShopService {
     
       
@@ -71,24 +73,21 @@ class ShopService {
     }
 
     // Create new shop
-    async createShop(data) {
+async createShop(data) {
         console.log("shop service ...", data);
 
         const db =  await pool.getConnection();
         const {user_id , business_name, registration_number} = data;
-        const id = uuidv4();
+     
         const shop = await this.getShopById(user_id);
 
         if(!shop){
 try {
             
 
-        const [result] = await db.query(`INSERT INTO catalog_sellers (id, user_id, business_name, registration_number) 
-        VALUES (?, ?,?,?)`, [id,user_id, business_name, registration_number]);
-      
-            console.log("here comes the data ", result);
-
-        } catch (error) {
+const newShop = await ShopModel.createNewShop(data);
+console.log("new shop registered", newShop);
+} catch (error) {
             console.error("Error creating shop: ", error);          
         }
         }
@@ -174,6 +173,8 @@ try {
 
     // Update order status
     async updateOrderStatus(shopId, orderId, status, userId) {
+
+
         const shop = await this.getShopById(shopId);
         if (!shop) {
             throw new AppError('Shop not found', 404);
@@ -234,6 +235,7 @@ try {
 
     // Admin: Suspend shop
     async suspendShop(shopId, reason, duration) {
+
         const shop = await this.getShopById(shopId);
         if (!shop) {
             throw new AppError('Shop not found', 404);
