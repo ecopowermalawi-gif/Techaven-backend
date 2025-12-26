@@ -4,7 +4,7 @@ import productRoutes from './routes/product.routes.js';
 import categoryRoutes from './routes/category.routes.js';
 import userRoutes from './routes/user.routes.js';
 
-
+import supportRoutes from './routes/support.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
 import shopRoutes from './routes/shop.routes.js';
 import shippingRoutes from './routes/shipping.routes.js';
@@ -45,7 +45,10 @@ app.use('/api/shops', shopRoutes);
 app.use('/api/shippings', shippingRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/inventory', inventoryRoutes);
+app.use('/api/app', supportRoutes);
+app.use('/api/help', supportRoutes);
 
+console.log('Routes configured.');
 
 // Error handling middleware
 app.use((err, req, res, next) => {

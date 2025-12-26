@@ -9,7 +9,7 @@ const router = express.Router();
 // Public shop routes
 router.get(
     '/shops',
-   // cacheMiddleware(300), // Cache for 5 minutes
+   cacheMiddleware(300), // Cache for 5 minutes
     shopController.getShops
 );
 

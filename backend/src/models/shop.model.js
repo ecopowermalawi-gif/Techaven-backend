@@ -51,6 +51,11 @@ static async createNewShop(shopData) {
         return shops[0];
     }
 
+    static async totalShops (){
+        
+        const total = await pool.query('SELECT COUNT(id) FROM catalog_sellers');
+return total;
+    }
     static async findBySeller(sellerId) {
         const [shops] = await pool.query(
             'SELECT * FROM shops WHERE seller_id = ?',
@@ -59,69 +64,52 @@ static async createNewShop(shopData) {
         return shops[0];
     }
 
-    static async findAll({ 
-        page = 1, 
-        limit = 10,
-        category = null,
-        status = 'approved',
-        search = ''
-    }) {
+    static async findAll() {
         let query = `
             SELECT s.*, 
                    u.email as seller_email,
                    u.username as seller_username,
-                   (SELECT COUNT(*) FROM products WHERE seller_id = s.id) as product_count,
+                   (SELECT COUNT(*) FROM catalog_products WHERE seller_id = s.id) as product_count,
                    (
                        SELECT AVG(rating)
-                       FROM product_reviews pr
-                       INNER JOIN products p ON pr.product_id = p.id
+                       FROM review_product_reviews pr
+                       INNER JOIN catalog_products p ON pr.product_id = p.id
                        WHERE p.seller_id = s.id
                    ) as rating
-            FROM shops s
-            LEFT JOIN users u ON s.seller_id = u.id
+            FROM catalog_sellers s
+            LEFT JOIN auth_users u ON s.user_id = u.id
             WHERE 1=1
         `;
-        const params = [];
+        //const params = [];
 
-        if (status) {
-            query += ' AND s.status = ?';
-            params.push(status);
-        }
+        // if (status) {
+        //     query += ' AND s.status = ?';
+        //     params.push(status);
+        // }
 
-        if (category) {
-            query += ' AND s.category = ?';
-            params.push(category);
-        }
+        // if (category) {
+        //     query += ' AND s.category = ?';
+        //     params.push(category);
+        // }
 
-        if (search) {
-            query += ' AND (s.name LIKE ? OR s.description LIKE ?)';
-            params.push(`%${search}%`, `%${search}%`);
-        }
+        // if (search) {
+        //     query += ' AND (s.name LIKE ? OR s.description LIKE ?)';
+        //     params.push(`%${search}%`, `%${search}%`);
+        // }
 
-        const offset = (page - 1) * limit;
-        query += ' ORDER BY s.created_at DESC LIMIT ? OFFSET ?';
-        params.push(Number(limit), offset);
+        // const offset = (page - 1) * limit;
+        // query += ' ORDER BY s.created_at DESC LIMIT ? OFFSET ?';
+        // params.push(Number(limit), offset);
 
-        const [shops] = await pool.query(query, params);
-        const [{ total }] = await pool.query(
-            'SELECT COUNT(*) as total FROM shops s WHERE 1=1' +
-            (status ? ' AND s.status = ?' : '') +
-            (category ? ' AND s.category = ?' : '') +
-            (search ? ' AND (s.name LIKE ? OR s.description LIKE ?)' : ''),
-            params.slice(0, -2) // Remove limit and offset
+        const [shops] = await pool.query(query);
+        const total  = await pool.query(
+            'SELECT COUNT(*) as total FROM catalog_sellers s WHERE 1=1'         
         );
 
-        return {
-            shops,
-            pagination: {
-                page: Number(page),
-                limit: Number(limit),
-                total
-            }
-        };
+        return shops;
     }
 
-     async update(id, {
+ async update(id, {
         name,
         description,
         category,

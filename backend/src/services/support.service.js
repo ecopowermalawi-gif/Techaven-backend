@@ -1,8 +1,7 @@
 import mysql from 'mysql2/promise';
 import config from '../config/config.js';
 
-const pool = mysql.createPool(config.database);
-
+import  pool  from  '../config/database.js';
 class SupportService {
     async createTicket(userId, subject, description, orderId = null) {
         const connection = await pool.getConnection();
@@ -179,6 +178,56 @@ class SupportService {
         } finally {
             connection.release();
         }
+    }
+    async getAppInfo(){
+        const connected = await pool.getConnection();
+            connected.beginTransaction();
+        try {
+            const app_data = await connected.query('SELECT * FROM `admin_system_settings`');
+          
+            return app_data;
+        } catch (error) {
+            console.log("fail to get app details with error: ", error);
+            connected.rollback();
+            throw error;
+        }
+        finally {
+connected.release();
+        }
+
+    }
+    async addSystemInfo(key_name, value){
+        const connected = await pool.getConnection();
+            connected.beginTransaction();
+            try {
+                const insertQuery = 'INSERT INTO `admin_system_settings` (key_name, value, updated_at) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE value = VALUES(value), updated_at = NOW()';
+                const [result] = await connected.query(insertQuery, [key_name, value]);
+                await connected.commit();
+                return result;  
+            } catch (error) {
+                connected.rollback();
+                throw error;
+            }
+        finally {
+            connected.release();
+        }
+    }
+    async upateSystemInfo(data){
+        const { key_name, value } = data.body;
+        const connected = await pool.getConnection();
+            connected.beginTransaction();
+            try {
+                const updateQuery = 'UPDATE `admin_system_settings` SET value = ? WHERE key_name = ?';
+                const [result] = await connected.query(updateQuery, [value, key_name]);
+                await connected.commit();
+                return result;  
+            } catch (error) {
+                connected.rollback();
+                throw error;
+            }
+        finally {
+            connected.release();
+        }   
     }
 
     async updateTicketStatus(ticketId, status) {

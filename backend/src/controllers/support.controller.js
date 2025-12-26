@@ -83,6 +83,28 @@ class SupportController {
         }
     }
 
+    //SELECT `id`, `key_name`, `value`, 
+    // `updated_at` FROM `admin_system_settings` WHERE 1
+async getAppInfo(req, res){
+    try {
+        const infores =  await supportService.getAppInfo();
+        console.log("here is the data", infores)
+        res.json({
+            success: true,
+            data: infores
+        });
+
+
+    } catch (error) {
+        
+   console.log(error); 
+   res.json({
+    success : false,
+    message: error.message
+   })    
+    }
+
+}
     async updateTicketStatus(req, res) {
         try {
             const { ticketId } = req.params;
@@ -96,6 +118,41 @@ class SupportController {
             res.status(400).json({
                 success: false,
                 message: error.message || 'Failed to update ticket status'
+            });
+        }
+    }
+
+    async addSystemInfo(req, res){
+        try {
+            const { key_name, value } = req.body;
+            const data = req.body;
+            const info = await supportService.addSystemInfo(data);
+            res.status(201).json({
+                success: true,
+                data: info
+            });
+        } catch (error) {
+            res.status(400).json({
+                success: false,
+                message: error.message || 'Failed to add system info'
+            });
+        }
+    }
+
+    updateSystemInfo(req, res){
+        try {
+            const { key_name, value } = req.body;
+            const data = req.body;
+            const info = supportService.updateSystemInfo(data);
+            res.json({
+                success: true,
+                data: info
+            });
+        }
+        catch (error) {
+            res.status(400).json({
+                success: false, 
+                message: error.message || 'Failed to update system info'
             });
         }
     }

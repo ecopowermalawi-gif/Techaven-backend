@@ -139,7 +139,8 @@ class ProductModel {
 
     //SELECT `id`, `product_id`, `url`, `alt_text`, `sort_order`,
     // `created_at` FROM `catalog_product_images` WHERE 1
-static async updateProductImage(productImageData) {
+
+    static async updateProductImage(productImageData) {
         const updates = [];
         const params = [];
 const db = await pool.getConnection();

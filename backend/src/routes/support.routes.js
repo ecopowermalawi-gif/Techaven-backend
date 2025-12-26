@@ -1,7 +1,7 @@
 import express from 'express';
 import supportController from '../controllers/support.controller.js';
 import { auth, checkRole } from '../middleware/auth.js';
-import { validate, supportTicketValidationRules, paginationRules } from '../middleware/validation.js';
+import { validate, paginationRules } from '../middleware/validation.js';
 
 const router = express.Router();
 
@@ -9,7 +9,7 @@ const router = express.Router();
 router.post(
     '/tickets',
     auth,
-    validate(supportTicketValidationRules.create),
+   // validate(supportTicketValidationRules.create),
     supportController.createTicket
 );
 
@@ -29,7 +29,7 @@ router.get(
 router.post(
     '/tickets/:ticketId/reply',
     auth,
-    validate(supportTicketValidationRules.reply),
+    //validate(supportTicketValidationRules.reply),
     supportController.addTicketReply
 );
 
@@ -48,11 +48,15 @@ router.get(
     supportController.getTickets
 );
 
+
+router.get('/info',
+    supportController.getAppInfo
+)
 router.put(
     '/tickets/:ticketId/status',
     auth,
     checkRole(['admin', 'support']),
-    validate(supportTicketValidationRules.updateStatus),
+    //validate(supportTicketValidationRules.updateStatus),
     supportController.updateTicketStatus
 );
 

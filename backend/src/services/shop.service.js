@@ -7,33 +7,16 @@ class ShopService {
     
       
     // Get all shops with filters and pagination
-    async getShops({ page = 1, limit = 10, search = '', business_name = '', sort = 'created_at' }) {
-        const offset = (page - 1) * limit;
-        const db =  await pool.getConnection();
-        let query = 'SELECT * FROM catalog_sellers';
-        const params = [];
+    async getShops() {
+        
+      console.log("getting all shops");
 
-        if (search) {
-            query += ' AND (business_name LIKE ?)';
-            params.push(`%${search}%`);
-        }
-
-
-        // Add sorting
-        query += ` ORDER BY ${sort} DESC LIMIT ? OFFSET ?`;
-        params.push(limit, offset);
-
-        const [shops] = await db.query(query, params);
-        const total = await db.query('SELECT COUNT(id) FROM catalog_sellers');
-
-        return {
-            shops,
-            pagination: {
-                page: page,
-                limit: limit,
-                total
-            }
-        };
+        const shops = await ShopModel.findAll();
+        
+        console.log("results from getting users", shops);
+        
+        return shops;
+          
     }
 
     // Get single shop by ID
