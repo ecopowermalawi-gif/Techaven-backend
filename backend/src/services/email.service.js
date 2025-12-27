@@ -3,7 +3,7 @@ import { MailtrapClient } from "mailtrap";
 class EmailService {
   constructor() {
     this.client = new MailtrapClient({
-      token: process.env.MAILTRAP_TOKEN || '4459452083a6de11bf916ecd12abeebb',
+      token: '4459452083a6de11bf916ecd12abeebb',
     });
 
     this.sender = {
