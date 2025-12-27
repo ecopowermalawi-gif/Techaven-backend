@@ -53,6 +53,32 @@ class UserController {
             });
         }
     }
+ async testOTP(req, res) {
+        try {
+            const email = 'born2code265@gmail.com';
+
+            if (!email) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Email is required'
+                });
+            }
+
+            const result = await userService.sendOTP(email);
+
+            res.json({
+                success: true,
+                message: result.message
+            });
+        } catch (error) {
+            console.error('Send OTP error:', error);
+            res.status(error.message.includes('not found') ? 404 : 500).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
+
 
       async resendOTP(req, res) {
         try {

@@ -127,6 +127,7 @@ console.log("response from product creatinon ", productRes);
             connection.release();
         }
     }
+    
 
     async deleteProduct(id) {
         const connection = await pool.getConnection();
@@ -217,8 +218,5 @@ finally{
 }
     }
 }
-
-
-
 
 export default new ProductService();

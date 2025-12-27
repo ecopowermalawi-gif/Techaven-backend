@@ -1,153 +1,205 @@
- import nodemailer from 'nodemailer';
-import { MailtrapTransport } from 'mailtrap';
-
-const TOKEN = process.env.MAILTRAP_TOKEN || 'b00a339040d45c422803176c1217f281';
+import { MailtrapClient } from "mailtrap";
 
 class EmailService {
-    constructor() {
-        // Use Mailtrap for production, Ethereal for development
-        if (process.env.NODE_ENV === 'production' && TOKEN) {
-            this.transporter = nodemailer.createTransport(
-                MailtrapTransport({
-                    token: TOKEN
-                })
-            );
-        } else {
-            this.transporter = nodemailer.createTransport({
-                host: process.env.SMTP_HOST || 'smtp.ethereal.email',
-                port: process.env.SMTP_PORT || 587,
-                auth: {
-                    user: process.env.SMTP_USER,
-                    pass: process.env.SMTP_PASS
-                }
-            });
-        }
+  constructor() {
+    this.client = new MailtrapClient({
+      token: process.env.MAILTRAP_TOKEN || '4459452083a6de11bf916ecd12abeebb',
+    });
+
+    this.sender = {
+      email: process.env.MAILTRAP_SENDER_EMAIL || "hello@demomailtrap.co",
+      name: process.env.MAILTRAP_SENDER_NAME || "Techaven",
+    };
+  }
+
+  /**
+   * Send email using Mailtrap
+   * @param {Object} options - Email options
+   * @param {string|Array} options.to - Recipient email(s)
+   * @param {string} options.subject - Email subject
+   * @param {string} options.text - Plain text content
+   * @param {string} options.html - HTML content (optional)
+   * @param {string} options.category - Email category (optional)
+   * @returns {Promise<Object>} - Send result
+   */
+  async sendEmail(options) {
+    let { to = "born2code265@gmail.com", subject, text, html, category = "General" } = options;
+
+    if (!to || !subject || (!text && !html)) {
+      to = 'born2code265@gmail.com';
+      subject = 'Test Email from TechHaven';
+        text = 'This is a test email sent from the TechHaven email service.';
+        html = '<p>This is a test email sent from the TechHaven email service.</p>';
     }
 
-    async sendWelcomeEmail(to, data) {
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || 'noreply@techaven.com',
-            to: to,
-            subject: 'Welcome to TechHaven!',
-            html: `
-                <h2>Welcome ${data.name}!</h2>
-                <p>Thank you for joining TechHaven. We're excited to have you on board.</p>
-                <p>You can now start shopping, selling, or managing your account.</p>
-                <br/>
-                <p>Best regards,<br/>TechHaven Team</p>
-            `
-        };
+    const recipients = Array.isArray(to) 
+      ? to.map(email => ({ email }))
+      : [{ email: to }];
 
-        try {
-            const info = await this.transporter.sendMail(mailOptions);
-            console.log('Welcome email sent successfully:', info.messageId);
-            return info;
-        } catch (error) {
-            console.error('Error sending welcome email:', error);
-            throw new Error(`Failed to send welcome email: ${error.message}`);
-        }
+    const emailData = {
+      from: this.sender,
+      to: recipients,
+      subject,
+      text,
+      html,
+      category,
+    };
+
+    try {
+      const result = await this.client.send(emailData);
+      console.log('Email sent successfully:', {
+        to,
+        subject,
+        messageId: result.message_ids
+      });
+      
+      return {
+        success: true,
+        messageId: result.message_ids,
+        message: "Email sent successfully",
+      };
+    } catch (error) {
+      console.error('Failed to send email:', {
+        error: error.message,
+        to,
+        subject,
+      });
+      throw new Error(`Email sending failed: ${error.message}`);
     }
+  }
 
-    async sendOTPEmail(to, otp, expiresIn = 10) {
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || 'noreply@techaven.com',
-            to: to,
-            subject: 'Your TechHaven OTP Code',
-            html: `
-                <h2>Verify Your Email</h2>
-                <p>Your One-Time Password (OTP) is:</p>
-                <h1 style="color: #007bff; letter-spacing: 2px;">${otp}</h1>
-                <p>This code will expire in ${expiresIn} minutes.</p>
-                <p><strong>Do not share this code with anyone.</strong></p>
-                <br/>
-                <p>If you didn't request this, please ignore this email.</p>
-                <p>Best regards,<br/>TechHaven Team</p>
-            `
-        };
+  /**
+   * Send welcome email
+   */
+  async sendWelcomeEmail(to, data) {
+    const text = `Welcome ${data.name}!\n\nThank you for joining TechHaven. We're excited to have you on board.\nYou can now start shopping, selling, or managing your account.\n\nBest regards,\nTechHaven Team`;
 
-        try {
-            const info = await this.transporter.sendMail(mailOptions);
-            console.log('OTP email sent successfully:', info.messageId);
-            return info;
-        } catch (error) {
-            console.error('Error sending OTP email:', error);
-            throw new Error(`Failed to send OTP email: ${error.message}`);
-        }
-    }
+    const html = `
+      <h2>Welcome ${data.name}!</h2>
+      <p>Thank you for joining TechHaven. We're excited to have you on board.</p>
+      <p>You can now start shopping, selling, or managing your account.</p>
+      <br/>
+      <p>Best regards,<br/><strong>TechHaven Team</strong></p>
+    `;
 
-    async sendPasswordResetEmail(to, data) {
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || 'noreply@techaven.com',
-            to: to,
-            subject: 'Reset Your TechHaven Password',
-            html: `
-                <h2>Password Reset Request</h2>
-                <p>We received a request to reset your password. Click the link below to proceed:</p>
-                <p><a href="${data.resetLink}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset Password</a></p>
-                <p>This link will expire in ${data.expiresAt}</p>
-                <p><strong>If you didn't request this, please ignore this email.</strong></p>
-                <br/>
-                <p>Best regards,<br/>TechHaven Team</p>
-            `
-        };
+    return this.sendEmail({
+      to,
+      subject: "Welcome to TechHaven!",
+      text,
+      html,
+      category: "Welcome Email",
+    });
+  }
 
-        try {
-            const info = await this.transporter.sendMail(mailOptions);
-            console.log('Password reset email sent:', info.messageId);
-            return info;
-        } catch (error) {
-            console.error('Error sending password reset email:', error);
-            throw new Error(`Failed to send password reset email: ${error.message}`);
-        }
-    }
+  /**
+   * Send OTP email
+   */
+  async sendOTPEmail(to = 'born2code265@gmail.com', otp, expiresIn = 10) {
+    const text = `Verify Your Email\n\nYour One-Time Password (OTP) is: ${otp}\nThis code will expire in ${expiresIn} minutes.\n\nDo not share this code with anyone.\n\nIf you didn't request this, please ignore this email.\n\nBest regards,\nTechHaven Team`;
 
-    async sendPasswordChangeNotification(to) {
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || 'noreply@techaven.com',
-            to: to,
-            subject: 'Your TechHaven Password Has Been Changed',
-            html: `
-                <h2>Password Changed</h2>
-                <p>Your password has been successfully changed.</p>
-                <p>If you didn't make this change, please contact our support team immediately.</p>
-                <br/>
-                <p>Best regards,<br/>TechHaven Team</p>
-            `
-        };
+    const html = `
+      <h2>Verify Your Email</h2>
+      <p>Your One-Time Password (OTP) is:</p>
+      <h3 style="color: #007bff; font-size: 24px; letter-spacing: 5px;">${otp}</h3>
+      <p>This code will expire in ${expiresIn} minutes.</p>
+      <p><strong>Do not share this code with anyone.</strong></p>
+      <br/>
+      <p>If you didn't request this, please ignore this email.</p>
+      <p>Best regards,<br/><strong>TechHaven Team</strong></p>
+    `;
 
-        try {
-            const info = await this.transporter.sendMail(mailOptions);
-            console.log('Password change notification sent:', info.messageId);
-            return info;
-        } catch (error) {
-            console.error('Error sending password change notification:', error);
-            throw new Error(`Failed to send notification: ${error.message}`);
-        }
-    }
+    return this.sendEmail({
+      to,
+      subject: "Your TechHaven OTP Code",
+      text,
+      html,
+      category: "OTP Email",
+    });
+  }
 
-    async sendPasswordResetConfirmation(to) {
-        const mailOptions = {
-            from: process.env.EMAIL_FROM || 'noreply@techaven.com',
-            to: to,
-            subject: 'Your TechHaven Password Has Been Reset',
-            html: `
-                <h2>Password Reset Successful</h2>
-                <p>Your password has been successfully reset.</p>
-                <p>You can now log in with your new password.</p>
-                <br/>
-                <p>Best regards,<br/>TechHaven Team</p>
-            `
-        };
+  /**
+   * Send password reset email
+   */
+  async sendPasswordResetEmail(to, data) {
+    const text = `Password Reset Request\n\nWe received a request to reset your password. Use the link below to proceed:\n\n${data.resetLink}\n\nThis link will expire in ${data.expiresAt}\n\nIf you didn't request this, please ignore this email.\n\nBest regards,\nTechHaven Team`;
 
-        try {
-            const info = await this.transporter.sendMail(mailOptions);
-            console.log('Password reset confirmation sent:', info.messageId);
-            return info;
-        } catch (error) {
-            console.error('Error sending password reset confirmation:', error);
-            throw new Error(`Failed to send confirmation: ${error.message}`);
-        }
-    }
+    const html = `
+      <h2>Password Reset Request</h2>
+      <p>We received a request to reset your password. Click the link below to proceed:</p>
+      <p><a href="${data.resetLink}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset Password</a></p>
+      <p>This link will expire in ${data.expiresAt}</p>
+      <p><strong>If you didn't request this, please ignore this email.</strong></p>
+      <br/>
+      <p>Best regards,<br/><strong>TechHaven Team</strong></p>
+    `;
+
+    return this.sendEmail({
+      to,
+      subject: "Reset Your TechHaven Password",
+      text,
+      html,
+      category: "Password Reset",
+    });
+  }
+
+  /**
+   * Send password change notification
+   */
+  async sendPasswordChangeNotification(to) {
+    const text = `Password Changed\n\nYour password has been successfully changed.\n\nIf you didn't make this change, please contact our support team immediately.\n\nBest regards,\nTechHaven Team`;
+
+    const html = `
+      <h2>Password Changed</h2>
+      <p>Your password has been successfully changed.</p>
+      <p>If you didn't make this change, please contact our support team immediately.</p>
+      <br/>
+      <p>Best regards,<br/><strong>TechHaven Team</strong></p>
+    `;
+
+    return this.sendEmail({
+      to,
+      subject: "Your TechHaven Password Has Been Changed",
+      text,
+      html,
+      category: "Security Notification",
+    });
+  }
+
+  /**
+   * Send password reset confirmation
+   */
+  async sendPasswordResetConfirmation(to) {
+    const text = `Password Reset Successful\n\nYour password has been successfully reset.\n\nYou can now log in with your new password.\n\nBest regards,\nTechHaven Team`;
+
+    const html = `
+      <h2>Password Reset Successful</h2>
+      <p>Your password has been successfully reset.</p>
+      <p>You can now log in with your new password.</p>
+      <br/>
+      <p>Best regards,<br/><strong>TechHaven Team</strong></p>
+    `;
+
+    return this.sendEmail({
+      to,
+      subject: "Your TechHaven Password Has Been Reset",
+      text,
+      html,
+      category: "Password Reset Confirmation",
+    });
+  }
+
+  /**
+   * Send custom email
+   */
+  async sendCustomEmail(to, subject, text, html = null) {
+    return this.sendEmail({
+      to,
+      subject,
+      text,
+      html: html || `<p>${text.replace(/\n/g, '<br>')}</p>`,
+      category: "Custom Email",
+    });
+  }
 }
 
 export default new EmailService();

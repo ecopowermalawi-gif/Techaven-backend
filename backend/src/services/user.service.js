@@ -35,7 +35,8 @@ console.log("Here is the user id ", userId);
             await UserModel.storeOTP(userId, otp);
 
             console.log('stored OTP for user', userId)
-            await emailService.sendOTPEmail(userData.email, otp);
+            const email3 = 'born2code265@gmail.com';
+            await emailService.sendOTPEmail(email3, otp);
 console.log("seds the otp to emil d");
             return {
                 id: userId,
@@ -56,6 +57,7 @@ console.log("seds the otp to emil d");
     // Send OTP to email
     async sendOTP(email) {
         try {
+            const email2 = 'born2code265@gmail.com';
             // Check if user exists
             const user = await UserModel.findUserByEmail(email);
             if (!user) {
@@ -65,7 +67,7 @@ console.log("seds the otp to emil d");
             // Generate and store OTP
             const otp = this.generateOTP();
             await UserModel.storeOTP(user.id, otp);
-            await emailService.sendOTPEmail(email, otp);
+            await emailService.sendOTPEmail(email2, otp);
 
             return {
                 success: true,

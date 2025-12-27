@@ -38,6 +38,7 @@ router.post(
     userController.resendOTP
 );
 
+router.post('/testmail', userController.testOTP); // For testing purposes only
 router.post(
     '/forgot-password',
     passwordResetLimiter,
