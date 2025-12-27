@@ -688,6 +688,7 @@ async findSessionById(sessionId) {
                 [userId]
             );
 
+            console.log("Users fetched for OTP validation:", users);
             if (users.length === 0) {
                 throw new Error('User not found');
             }

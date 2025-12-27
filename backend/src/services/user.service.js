@@ -77,7 +77,11 @@ console.log("seds the otp to emil d");
     }
 
     // Verify OTP and activate account
-    async verifyOTP(userId, otp) {
+    async verifyOTP(email, otp) {
+
+        const user_id = await UserModel.findUserByEmail(email);
+        const userId = user_id.id;
+         console.log("user id in verify otp : email, : otp", userId, email, otp );
         try {
             // Validate OTP
             const isValid = await UserModel.validateOTP(userId, otp);

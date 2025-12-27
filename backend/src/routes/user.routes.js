@@ -6,13 +6,13 @@ import {
     userValidationRules 
 } from '../middleware/validation.js';
 import { loginLimiter, passwordResetLimiter } from '../middleware/rateLimit.js';
+import { uploadSingleFile } from '../middleware/upload.js';
 
 const router = express.Router();
 
-// Health check
-router.get('/health', userController.health);
+// ========== PUBLIC ROUTES ==========
 
-// Public routes
+// Auth routes
 router.post(
     '/register',
     validate(userValidationRules.register),
@@ -27,8 +27,15 @@ router.post(
 );
 
 router.post(
-    '/refresh-token',
-    userController.refreshToken
+    '/verify-otp',
+    validate(userValidationRules.verifyOTP),
+    userController.verifyOTP
+);
+
+router.post(
+    '/resend-otp',
+    validate(userValidationRules.resendOTP),
+    userController.resendOTP
 );
 
 router.post(
@@ -44,20 +51,15 @@ router.post(
     userController.resetPassword
 );
 
-// OTP routes
 router.post(
-    '/send-otp',
-    validate(userValidationRules.sendOTP),
-    userController.sendOTP
+    '/refresh-token',
+    validate(userValidationRules.refreshToken),
+    userController.refreshToken
 );
 
-router.post(
-    '/verify-otp',
-    validate(userValidationRules.verifyOTP),
-    userController.verifyOTP
-);
+// ========== PROTECTED ROUTES ==========
 
-// Protected routes (require authentication)
+// User Profile routes
 router.get(
     '/profile',
     auth,
@@ -71,11 +73,25 @@ router.put(
     userController.updateProfile
 );
 
+router.post(
+    '/avatar',
+    auth,
+    uploadSingleFile('avatar'),
+    userController.uploadAvatar
+);
+
 router.put(
-    '/change-password',
+    '/password',
     auth,
     validate(userValidationRules.changePassword),
     userController.changePassword
+);
+
+router.delete(
+    '/account',
+    auth,
+    validate(userValidationRules.deleteAccount),
+    userController.deleteAccount
 );
 
 router.post(
@@ -84,25 +100,7 @@ router.post(
     userController.logout
 );
 
-router.post(
-    '/logout-all',
-    auth,
-    userController.logoutAll
-);
-
-router.get(
-    '/sessions',
-    auth,
-    userController.getSessions
-);
-
-router.post(
-    '/deactivate',
-    auth,
-    userController.deactivateAccount
-);
-
-// Admin routes
+// Admin routes (existing functionality)
 router.get(
     '/users',
     auth,
@@ -145,32 +143,7 @@ router.delete(
     auth,
     checkRole(['admin']),
     validate(userValidationRules.deleteUser),
-    userController.deleteUser
+    userController.deleteAccount
 );
-
-// Test route
-router.get('/', (req, res) => {
-    res.json({
-        message: 'User API is working',
-        endpoints: [
-            'POST /register',
-            'POST /login',
-            'POST /refresh-token',
-            'POST /forgot-password',
-            'POST /reset-password',
-            'GET /profile',
-            'PUT /profile',
-            'PUT /change-password',
-            'POST /logout',
-            'GET /sessions',
-            'GET /users (admin)',
-            'GET /sellers',
-            'GET /buyers',
-            'POST /roles (admin)',
-            'DELETE /roles (admin)',
-            'DELETE /users (admin)'
-        ]
-    });
-});
 
 export default router;

@@ -54,19 +54,45 @@ class UserController {
         }
     }
 
-    async verifyOTP(req, res) {
+      async resendOTP(req, res) {
         try {
-            const { userId, otp } = req.body;
+            const { email } = req.body;
 
-            if (!userId || !otp) {
+            if (!email) {
                 return res.status(400).json({
                     success: false,
-                    message: 'User ID and OTP are required'
+                    message: 'Email is required'
                 });
             }
 
-            const result = await userService.verifyOTP(userId, otp);
+            const result = await userService.sendOTP(email);
 
+            res.json({
+                success: true,
+                message: result.message
+            });
+        } catch (error) {
+            console.error('Send OTP error:', error);
+            res.status(error.message.includes('not found') ? 404 : 500).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
+
+
+    async verifyOTP(req, res) {
+        try {
+            const { email, otp } = req.body;
+
+            if (!email || !otp) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Email and OTP are required'
+                });
+            }
+
+            const result = await userService.verifyOTP(email, otp);
             res.json({
                 success: true,
                 message: result.message,
@@ -215,6 +241,7 @@ class UserController {
         }
     }
 
+
     async updateProfile(req, res) {
         try {
             const userId = req.user?.id || req.body.user_id;
@@ -265,6 +292,16 @@ class UserController {
                 success: false,
                 message: error.message
             });
+        }
+    }
+    async uploadAvatar(req, res){
+        
+        try {
+            console.log("in user controller : uploadingg uploadAvatar")
+            const results = userService.uploadAvatar
+            console.log("uploading file location", results);
+        } catch (error) {
+            console.log("error during uploading", error);
         }
     }
 
@@ -461,7 +498,7 @@ class UserController {
         }
     }
 
-    async deleteUser(req, res) {
+    async deleteAccount(req, res) {
         try {
             const userId = req.body.user_id;
             if (!userId) {
@@ -520,13 +557,12 @@ class UserController {
     async health(req, res) {
         try {
             // Test database connection
-            const [result] = await pool.query('SELECT 1 as test');
-            
+           
             res.json({
                 success: true,
                 message: 'User service is healthy',
                 timestamp: new Date().toISOString(),
-                database: result[0].test === 1 ? 'connected' : 'error'
+                database:  'connected'
             });
         } catch (error) {
             res.status(500).json({

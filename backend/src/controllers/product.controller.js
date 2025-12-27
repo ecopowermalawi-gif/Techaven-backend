@@ -36,6 +36,117 @@ class ProductController {
         }
     }
 
+
+     async getFeaturedProducts(req, res) {
+        console.log("Inside get Featured Products controller");
+        try {
+            const limit = Number(req.query.limit) || 10;
+            const offset = Number(req.query.offset) || 0;
+            const products = await productService.getFeaturedProducts(limit, offset);
+            res.json({
+                success: true,
+                data: products
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Internal server error'
+            });
+        }
+    }
+
+     async getHotSales(req, res) {
+        console.log("Inside get Hot Sales controller");
+        try {
+            const limit = Number(req.query.limit) || 10;
+            const offset = Number(req.query.offset) || 0;
+            const products = await productService.getHotSales(limit, offset);
+            res.json({
+                success: true,
+                data: products
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Internal server error'
+            });
+        }
+    }
+
+     async getSpecialOffers(req, res) {
+        console.log("Inside get Special Offers controller");
+        try {
+            const limit = Number(req.query.limit) || 10;
+            const offset = Number(req.query.offset) || 0;
+            const products = await productService.getSpecialOffers(limit, offset);
+            res.json({
+                success: true,
+                data: products
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Internal server error'
+            });
+        }
+    }
+
+     async getNewArrivals(req, res) {
+        console.log("Inside get New Arrivals controller");
+        try {
+            const limit = Number(req.query.limit) || 10;
+            const offset = Number(req.query.offset) || 0;
+            const products = await productService.getNewArrivals(limit, offset);
+            res.json({
+                success: true,
+                data: products
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Internal server error'
+            });
+        }
+    }
+
+
+     async getNewArrivals(req, res) {
+        console.log("Inside get New Arrivals controller");
+        try {
+            const limit = Number(req.query.limit) || 10;
+            const offset = Number(req.query.offset) || 0;
+            const products = await productService.getNewArrivals(limit, offset);
+            res.json({
+                success: true,
+                data: products
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Internal server error'
+            });
+        }
+    }
+
+     async getProductReviews(req, res) {
+        console.log("Inside get Product Reviews controller");
+        try {
+            const limit = Number(req.query.limit) || 10;
+            const offset = Number(req.query.offset) || 0;
+            const reviews = await productService.getProductReviews(req.params.productId, limit, offset);
+            res.json({
+                success: true,
+                data: reviews
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Internal server error'
+            });
+        }
+    }
+
+
     async getProductById(req, res) {
         try {
             const product = await productService.getProductById(req.params.id);
@@ -74,6 +185,26 @@ class ProductController {
             });
         }
     }
+
+     
+    async addProductReview(req, res) {
+        try {
+            const reviewId = await productService.addProductReview(req.params.productId, req.body);
+            res.status(201).json({
+                success: true,
+                data: {
+                    id: reviewId,
+                    message: 'Review added successfully'
+                }
+            });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Internal server error'
+            });
+        }
+    }
+                  
 
     async updateProduct(req, res) {
         try {
@@ -191,6 +322,7 @@ class ProductController {
             });
         }
     }
+
 }
 
 export default new ProductController();
