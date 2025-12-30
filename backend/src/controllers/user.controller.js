@@ -1,3 +1,4 @@
+import userModel from '../models/user.model.js';
 import userService from '../services/user.service.js';
 
 class UserController {
@@ -79,7 +80,7 @@ class UserController {
         }
     }
 
-
+//resend otp 
       async resendOTP(req, res) {
         try {
             const { email } = req.body;
@@ -149,12 +150,14 @@ class UserController {
                 sameSite: 'strict',
                 maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
             });
+            
 
             res.json({
                 success: true,
                 message: 'Login successful',
                 data: {
                     accessToken: result.accessToken,
+                    refreshToken: result.refreshToken,
                     sessionId: result.sessionId,
                     user: result.user
                 }
@@ -168,6 +171,7 @@ class UserController {
         }
     }
 
+    //logout 
     async logout(req, res) {
         try {
             const sessionId = req.headers['x-session-id'];
@@ -191,10 +195,11 @@ class UserController {
         }
     }
 
+    //refresh token
     async refreshToken(req, res) {
         try {
-            const refreshToken = req.cookies.refreshToken;
-            
+            const refreshToken = req.body.refreshToken || req.cookies.refreshToken;
+            console.log("===here is the refresh token ::",refreshToken);
             if (!refreshToken) {
                 return res.status(401).json({
                     success: false,
@@ -353,10 +358,13 @@ class UserController {
 
     async resetPassword(req, res) {
         try {
-            const { token, userId, newPassword } = req.body;
-            
-            await userService.resetPassword(token, userId, newPassword);
-            
+            const { token, email, newPassword } = req.body;
+            const user = await userModel.findUserByEmail(email);
+            const userId = user.id
+            console.log(`==in cotroller ::=user id : ${userId} ==== token : ${token} ==== new password ${newPassword}`);
+           
+            const results= await userService.resetPassword(token, userId, newPassword);
+            console.log("=====results update:", results);
             res.json({
                 success: true,
                 message: 'Password reset successful'
@@ -501,7 +509,7 @@ class UserController {
     // Account Management
     async deactivateAccount(req, res) {
         try {
-            const userId = req.user?.id || req.body.user_id;
+            const userId = req.body.user_id;
             if (!userId) {
                 return res.status(400).json({
                     success: false,
@@ -548,6 +556,33 @@ class UserController {
             });
         }
     }
+
+// Account Management
+    async verifyShop(req, res) {
+        try {
+            const userId = req.body.user_id;
+            if (!userId) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'User ID required'
+                });
+            }
+
+            await userService.activateShop(userId);
+            
+            res.json({
+                success: true,
+                message: 'Account deactivated successfully'
+            });
+        } catch (error) {
+            console.error('Deactivate account error:', error);
+            res.status(500).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
+
 
     // Search
     async searchUsers(req, res) {

@@ -13,12 +13,14 @@ const router = express.Router();
 // ========== PUBLIC ROUTES ==========
 
 // Auth routes
+//reister
 router.post(
     '/register',
     validate(userValidationRules.register),
     userController.register
 );
 
+//login
 router.post(
     '/login',
     loginLimiter,
@@ -26,19 +28,24 @@ router.post(
     userController.login
 );
 
+// verify -otp
 router.post(
     '/verify-otp',
     validate(userValidationRules.verifyOTP),
     userController.verifyOTP
 );
 
+//resend otp
+
 router.post(
     '/resend-otp',
-    validate(userValidationRules.resendOTP),
+    //validate(userValidationRules.resendOTP),
     userController.resendOTP
 );
-
+//test send otp mail
 router.post('/testmail', userController.testOTP); // For testing purposes only
+
+//forgot password
 router.post(
     '/forgot-password',
     passwordResetLimiter,
@@ -46,15 +53,18 @@ router.post(
     userController.forgotPassword
 );
 
+//rest-password
 router.post(
     '/reset-password',
-    validate(userValidationRules.resetPassword),
+    //validate(userValidationRules.resetPassword),
     userController.resetPassword
 );
 
+
+//refresh token
 router.post(
     '/refresh-token',
-    validate(userValidationRules.refreshToken),
+   // validate(userValidationRules.refreshToken),
     userController.refreshToken
 );
 
@@ -67,6 +77,7 @@ router.get(
     userController.getProfile
 );
 
+//update the user profile
 router.put(
     '/profile',
     auth,
@@ -74,6 +85,7 @@ router.put(
     userController.updateProfile
 );
 
+//uploading profile picture
 router.post(
     '/avatar',
     auth,
@@ -81,6 +93,7 @@ router.post(
     userController.uploadAvatar
 );
 
+//chage the password
 router.put(
     '/password',
     auth,
@@ -88,6 +101,7 @@ router.put(
     userController.changePassword
 );
 
+//delete account
 router.delete(
     '/account',
     auth,
@@ -95,6 +109,8 @@ router.delete(
     userController.deleteAccount
 );
 
+
+//logout
 router.post(
     '/logout',
     auth,
@@ -102,6 +118,8 @@ router.post(
 );
 
 // Admin routes (existing functionality)
+
+//get all users by admin
 router.get(
     '/users',
     auth,
@@ -109,6 +127,7 @@ router.get(
     userController.getAllUsers
 );
 
+// get all sellers
 router.get(
     '/sellers',
     auth,
@@ -116,6 +135,8 @@ router.get(
     userController.getSellers
 );
 
+
+//get all sellers
 router.get(
     '/buyers',
     auth,
@@ -123,6 +144,8 @@ router.get(
     userController.getBuyers
 );
 
+
+//add a role
 router.post(
     '/roles',
     auth,
@@ -131,6 +154,7 @@ router.post(
     userController.addRole
 );
 
+//remove a role
 router.delete(
     '/roles',
     auth,
@@ -139,11 +163,30 @@ router.delete(
     userController.removeRole
 );
 
+//deactivate account
+router.put(
+    '/deactivate',
+    auth,
+    checkRole(['admin']),
+    //validate(userValidationRules.deleteUser),
+    userController.deactivateAccount
+);
+
+//verify shop account
+router.put(
+    '/verify-shop',
+    auth,
+    checkRole(['admin']),
+    //validate(userValidationRules.deleteUser),
+    userController.verifyShop
+);
+
+//delete account
 router.delete(
     '/users',
     auth,
     checkRole(['admin']),
-    validate(userValidationRules.deleteUser),
+    //validate(userValidationRules.deleteUser),
     userController.deleteAccount
 );
 

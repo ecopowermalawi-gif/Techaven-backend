@@ -240,20 +240,7 @@ export const userValidationRules = {
     
     resetPassword: [
         body('token')
-            .notEmpty().withMessage('Reset token is required'),
-        body('userId')
-            .notEmpty().withMessage('User ID is required')
-            .isLength({ min: 36, max: 36 }).withMessage('Invalid user ID format'),
-        body('newPassword')
-            .isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
-            .matches(/\d/).withMessage('Password must contain a number'),
-        body('confirmPassword')
-            .custom((value, { req }) => {
-                if (value !== req.body.newPassword) {
-                    throw new Error('Password confirmation does not match');
-                }
-                return true;
-            })
+            .notEmpty().withMessage('Reset token is required')   
     ],
 
     sendOTP: [

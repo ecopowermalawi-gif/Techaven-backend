@@ -19,7 +19,7 @@ class UserService {
             if (userData.username) {
                 const usernameExists = await UserModel.checkUsernameExists(userData.username);
                 if (usernameExists) {
-                    console.log("user email already existed ", usernameExists)
+                    console.log("user name already existed ", usernameExists)
                     throw new Error('Username already taken');
                 }
             }
@@ -42,7 +42,7 @@ console.log("seds the otp to emil d");
                 id: userId,
                 email: userData.email,
                 username: userData.username,
-                message: 'User registered. Check your email for OTP to verify your account.'
+                message: `User registered. Check your email for OTP to verify your account.: ${otp}`
             };
         } catch (error) {
             throw new Error(`Registration failed: ${error.message}`);
@@ -57,7 +57,7 @@ console.log("seds the otp to emil d");
     // Send OTP to email
     async sendOTP(email) {
         try {
-            const email2 = 'born2code265@gmail.com';
+            
             // Check if user exists
             const user = await UserModel.findUserByEmail(email);
             if (!user) {
@@ -67,11 +67,11 @@ console.log("seds the otp to emil d");
             // Generate and store OTP
             const otp = this.generateOTP();
             await UserModel.storeOTP(user.id, otp);
-            await emailService.sendOTPEmail(email2, otp);
+            await emailService.sendOTPEmail(email, otp);
 
             return {
                 success: true,
-                message: 'OTP sent to your email'
+                message: `OTP sent to your email ${otp}`
             };
         } catch (error) {
             throw new Error(`Failed to send OTP: ${error.message}`);
@@ -125,7 +125,7 @@ console.log("seds the otp to emil d");
 
             // Check if user is active
             if (!user.is_active) {
-                throw new Error('Account is deactivated');
+                throw new Error('Account not Active');
             }
 
             // Verify password
@@ -142,7 +142,7 @@ console.log("seds the otp to emil d");
             // Remove sensitive data
             const userData = { ...user };
             delete userData.password_hash;
-            delete userData.refresh_token_hash;
+            
             userData.roles = userData.roles ? userData.roles.split(',') : [];
 
             return {
@@ -313,19 +313,20 @@ console.log("seds the otp to emil d");
             
             // Generate reset link
             const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}&userId=${userId}`;
-            
+            console.log(`reset password for user is : ${userId}: === link :`, resetLink);
+            console.log('== reset token :', resetToken)
+
             // Send reset email
-            await emailService.sendPasswordResetEmail(email, {
-                resetLink,
-                expiresAt: expiresAt.toLocaleString()
-            });
+            // await emailService.sendPasswordResetEmail(email, {
+            //     resetLink,
+            //     expiresAt: expiresAt.toLocaleString()
+            // });
 
             return {
                 success: true,
-                message: 'Password reset email sent',
-                // In production, don't return the token
-                // Only returning for demo/testing
-                resetToken: process.env.NODE_ENV === 'development' ? resetToken : undefined
+                message: `Password reset email sent: ${resetToken}`,
+           
+                resetToken: resetToken
             };
         } catch (error) {
             throw new Error(`Password reset request failed: ${error.message}`);
@@ -334,6 +335,9 @@ console.log("seds the otp to emil d");
 
     async resetPassword(token, userId, newPassword) {
         try {
+
+             console.log(`==in service::=user id : ${userId} ==== token : ${token} ==== new password ${newPassword}`);
+           
             // Validate token
             const isValid = await UserModel.validatePasswordResetToken(token, userId);
             if (!isValid) {
@@ -372,7 +376,19 @@ console.log("seds the otp to emil d");
         }
     }
 
+    //activate user
     async activateUser(userId) {
+        try {
+            await UserModel.updateUser(userId, { is_active: true });
+            return true;
+        } catch (error) {
+            throw new Error(`Failed to activate user: ${error.message}`);
+        }
+    }
+
+    //activate shop
+    
+    async activateShop(userId) {
         try {
             await UserModel.updateUser(userId, { is_active: true });
             return true;

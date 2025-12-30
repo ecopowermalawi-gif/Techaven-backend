@@ -165,6 +165,32 @@ class UserModel {
         }
     }
 
+     async activateShop(id) {
+        const connection = await pool.getConnection();
+        try {
+            await connection.beginTransaction();
+
+
+          
+
+    
+                await connection.query(
+                    'UPDATE auth_users SET is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                    [3, id]
+                );
+            
+
+            await connection.commit();
+            return true;
+        } catch (error) {
+            await connection.rollback();
+            throw error;
+        } finally {
+            connection.release();
+        }
+    }
+
+    //update user
     async updateUser(id, updates) {
         const connection = await pool.getConnection();
         try {
@@ -380,6 +406,7 @@ class UserModel {
             `, [
                 sessionId,
                 userId,
+             
                 refreshTokenHash,
                 sessionData.expiresAt || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
                 sessionData.userAgent || null,
@@ -503,6 +530,8 @@ async findSessionById(sessionId) {
                 )
                 WHERE user_id = ?
             `, [resetTokenHash, expiresAt, userId]);
+
+            
 
             await connection.commit();
             
