@@ -14,11 +14,11 @@ class UserModel {
             const userId = uuidv4();
             const passwordHash = await bcrypt.hash(userData.password, 10);
 
-            // Insert user
+            // Insert user with phone number
             await connection.query(
-                `INSERT INTO auth_users (id, email, password_hash, username, is_active) 
-                 VALUES (?, ?, ?, ?, ?)`,
-                [userId, userData.email, passwordHash, userData.username, 0]
+                `INSERT INTO auth_users (id, phone_number, password_hash, username, email, is_active) 
+                 VALUES (?, ?, ?, ?, ?, ?)`,
+                [userId, userData.phone_number, passwordHash, userData.username, userData.email || null, 0]
             );
 
             // Create profile
@@ -64,7 +64,7 @@ class UserModel {
                 SELECT 
                     u.*,
                     GROUP_CONCAT(DISTINCT r.name) as roles,
-                    up.full_name, up.phone, up.dob, up.locale,
+                    up.full_name, up.email as profile_email, up.dob, up.locale,
                     cs.business_name as seller_business
                 FROM auth_users u
                 LEFT JOIN auth_users_roles ur ON u.id = ur.user_id
@@ -106,12 +106,38 @@ class UserModel {
         }
     }
 
+    async findUserByPhone(phoneNumber) {
+        try {
+            const [users] = await pool.query(`
+                SELECT 
+                    u.*,
+                    GROUP_CONCAT(DISTINCT r.name) as roles
+                FROM auth_users u
+                LEFT JOIN auth_users_roles ur ON u.id = ur.user_id
+                LEFT JOIN auth_roles r ON ur.role_id = r.id
+                WHERE u.phone_number = ?
+                GROUP BY u.id
+            `, [phoneNumber]);
+
+            return users[0] || null;
+        } catch (error) {
+            throw new Error(`Failed to find user by phone: ${error.message}`);
+        }
+    }
+
     async findUserByUsername(username) {
         try {
-            const [users] = await pool.query(
-                'SELECT * FROM auth_users WHERE username = ?',
-                [username]
-            );
+            const [users] = await pool.query(`
+                SELECT 
+                    u.*,
+                    GROUP_CONCAT(DISTINCT r.name) as roles
+                FROM auth_users u
+                LEFT JOIN auth_users_roles ur ON u.id = ur.user_id
+                LEFT JOIN auth_roles r ON ur.role_id = r.id
+                WHERE u.username = ?
+                GROUP BY u.id
+            `, [username]);
+
             return users[0] || null;
         } catch (error) {
             throw new Error(`Failed to find user: ${error.message}`);
@@ -124,7 +150,7 @@ class UserModel {
                 SELECT 
                     u.*,
                     GROUP_CONCAT(DISTINCT r.name) as roles,
-                    up.full_name, up.phone, up.dob, up.locale,
+                    up.full_name, up.email as profile_email, up.dob, up.locale,
                     cs.business_name as seller_business
                 FROM auth_users u
                 LEFT JOIN auth_users_roles ur ON u.id = ur.user_id
@@ -165,20 +191,15 @@ class UserModel {
         }
     }
 
-     async activateShop(id) {
+    async activateShop(id) {
         const connection = await pool.getConnection();
         try {
             await connection.beginTransaction();
 
-
-          
-
-    
-                await connection.query(
-                    'UPDATE auth_users SET is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-                    [3, id]
-                );
-            
+            await connection.query(
+                'UPDATE auth_users SET is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+                [3, id]
+            );
 
             await connection.commit();
             return true;
@@ -190,30 +211,47 @@ class UserModel {
         }
     }
 
-    //update user
+    // Update user
     async updateUser(id, updates) {
         const connection = await pool.getConnection();
         try {
             await connection.beginTransaction();
 
-            if (updates.email) {
-                await connection.query(
-                    'UPDATE auth_users SET email = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-                    [updates.email, id]
-                );
+            const updateFields = [];
+            const params = [];
+
+            if (updates.email !== undefined) {
+                updateFields.push('email = ?');
+                params.push(updates.email);
             }
 
-            if (updates.username) {
-                await connection.query(
-                    'UPDATE auth_users SET username = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-                    [updates.username, id]
-                );
+            if (updates.phone_number !== undefined) {
+                updateFields.push('phone_number = ?');
+                params.push(updates.phone_number);
+            }
+
+            if (updates.username !== undefined) {
+                updateFields.push('username = ?');
+                params.push(updates.username);
             }
 
             if (updates.is_active !== undefined) {
+                updateFields.push('is_active = ?');
+                params.push(updates.is_active ? 1 : 0);
+            }
+
+            if (updates.phone_verified !== undefined) {
+                updateFields.push('phone_verified = ?');
+                params.push(updates.phone_verified ? 1 : 0);
+            }
+
+            if (updateFields.length > 0) {
+                updateFields.push('updated_at = CURRENT_TIMESTAMP');
+                params.push(id);
+
                 await connection.query(
-                    'UPDATE auth_users SET is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
-                    [updates.is_active ? 1 : 0, id]
+                    `UPDATE auth_users SET ${updateFields.join(', ')} WHERE id = ?`,
+                    params
                 );
             }
 
@@ -230,19 +268,21 @@ class UserModel {
     async updateUserProfile(userId, profileData) {
         try {
             await pool.query(`
-                INSERT INTO auth_user_profile (user_id, full_name, phone, dob, locale)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO auth_user_profile (user_id, full_name, email, dob, locale, metadata)
+                VALUES (?, ?, ?, ?, ?, ?)
                 ON DUPLICATE KEY UPDATE
                 full_name = VALUES(full_name),
-                phone = VALUES(phone),
+                email = VALUES(email),
                 dob = VALUES(dob),
-                locale = VALUES(locale)
+                locale = VALUES(locale),
+                metadata = VALUES(metadata)
             `, [
                 userId,
                 profileData.full_name,
-                profileData.phone,
+                profileData.email,
                 profileData.dob,
-                profileData.locale
+                profileData.locale,
+                profileData.metadata ? JSON.stringify(profileData.metadata) : null
             ]);
             return true;
         } catch (error) {
@@ -364,7 +404,7 @@ class UserModel {
         }
     }
 
-   async updateUserRole(userId, roleName) {
+    async updateUserRole(userId, roleName) {
         const connection = await pool.getConnection();
         try {
             await connection.beginTransaction();
@@ -376,7 +416,7 @@ class UserModel {
 
             if (roles.length > 0) {
                 await connection.query(
-                    'UPDATE auth_users_roles SET  role_id = ? WHERE user_id = ?',
+                    'UPDATE auth_users_roles SET role_id = ? WHERE user_id = ?',
                     [roles[0].id, userId]
                 );
             }
@@ -390,7 +430,6 @@ class UserModel {
             connection.release();
         }
     }
-
 
     // Session Management
     async createSession(userId, sessionData = {}) {
@@ -406,7 +445,6 @@ class UserModel {
             `, [
                 sessionId,
                 userId,
-             
                 refreshTokenHash,
                 sessionData.expiresAt || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
                 sessionData.userAgent || null,
@@ -419,12 +457,10 @@ class UserModel {
         }
     }
 
-
-
-async findSessionById(sessionId) {
+    async findSessionById(sessionId) {
         try {
             const [sessions] = await pool.query(`
-                SELECT s.*, u.email, u.username
+                SELECT s.*, u.email, u.username, u.phone_number
                 FROM auth_sessions s
                 JOIN auth_users u ON s.user_id = u.id
                 WHERE s.id = ? AND s.expires_at > NOW()
@@ -496,29 +532,17 @@ async findSessionById(sessionId) {
     }
 
     // Password Reset
-    async createPasswordResetToken(email) {
+    async createPasswordResetToken(userId) {
         const connection = await pool.getConnection();
         try {
             await connection.beginTransaction();
 
-            // Find user
-            const [users] = await connection.query(
-                'SELECT id FROM auth_users WHERE email = ?',
-                [email]
-            );
-
-            if (users.length === 0) {
-                throw new Error('User not found');
-            }
-
-            const userId = users[0].id;
-            
             // Generate reset token
             const resetToken = crypto.randomBytes(32).toString('hex');
             const resetTokenHash = crypto.createHash('sha256').update(resetToken).digest('hex');
             const expiresAt = new Date(Date.now() + 3600000); // 1 hour
 
-            // Store in user profile metadata (or create separate table)
+            // Store in user profile metadata
             await connection.query(`
                 UPDATE auth_user_profile 
                 SET metadata = JSON_SET(
@@ -530,8 +554,6 @@ async findSessionById(sessionId) {
                 )
                 WHERE user_id = ?
             `, [resetTokenHash, expiresAt, userId]);
-
-            
 
             await connection.commit();
             
@@ -608,6 +630,23 @@ async findSessionById(sessionId) {
         }
     }
 
+    async checkPhoneNumberExists(phoneNumber, excludeUserId = null) {
+        try {
+            let query = 'SELECT COUNT(*) as count FROM auth_users WHERE phone_number = ?';
+            const params = [phoneNumber];
+
+            if (excludeUserId) {
+                query += ' AND id != ?';
+                params.push(excludeUserId);
+            }
+
+            const [result] = await pool.query(query, params);
+            return result[0].count > 0;
+        } catch (error) {
+            throw new Error(`Failed to check phone number: ${error.message}`);
+        }
+    }
+
     async checkUsernameExists(username, excludeUserId = null) {
         try {
             let query = 'SELECT COUNT(*) as count FROM auth_users WHERE username = ?';
@@ -630,8 +669,8 @@ async findSessionById(sessionId) {
         try {
             const [sellers] = await pool.query(`
                 SELECT 
-                    u.id, u.email, u.username, u.created_at,
-                    up.full_name, up.phone,
+                    u.id, u.email, u.phone_number, u.username, u.created_at,
+                    up.full_name, up.email as profile_email,
                     cs.business_name, cs.registration_number,
                     GROUP_CONCAT(DISTINCT r.name) as roles
                 FROM auth_users u
@@ -657,8 +696,8 @@ async findSessionById(sessionId) {
         try {
             const [buyers] = await pool.query(`
                 SELECT 
-                    u.id, u.email, u.username, u.created_at,
-                    up.full_name, up.phone,
+                    u.id, u.email, u.phone_number, u.username, u.created_at,
+                    up.full_name, up.email as profile_email,
                     GROUP_CONCAT(DISTINCT r.name) as roles
                 FROM auth_users u
                 JOIN auth_users_roles ur ON u.id = ur.user_id
@@ -683,6 +722,7 @@ async findSessionById(sessionId) {
         return jwt.sign(
             {
                 id: user.id,
+                phone_number: user.phone_number,
                 email: user.email,
                 username: user.username,
                 roles: user.roles || []
@@ -748,6 +788,45 @@ async findSessionById(sessionId) {
             return true;
         } catch (error) {
             throw new Error(`Failed to clear OTP: ${error.message}`);
+        }
+    }
+
+    // New methods for phone number management
+    async storePendingPhoneUpdate(userId, phoneNumber, otp) {
+        try {
+            const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+            await pool.query(
+                'INSERT INTO auth_user_pending_updates (user_id, phone_number, otp, expires_at) VALUES (?, ?, ?, ?)',
+                [userId, phoneNumber, otp, expiresAt]
+            );
+            return true;
+        } catch (error) {
+            throw new Error(`Failed to store pending phone update: ${error.message}`);
+        }
+    }
+
+    async validatePendingPhoneUpdate(userId, phoneNumber, otp) {
+        try {
+            const [updates] = await pool.query(
+                'SELECT * FROM auth_user_pending_updates WHERE user_id = ? AND phone_number = ? AND otp = ? AND expires_at > NOW()',
+                [userId, phoneNumber, otp]
+            );
+
+            return updates.length > 0;
+        } catch (error) {
+            throw new Error(`Failed to validate pending phone update: ${error.message}`);
+        }
+    }
+
+    async clearPendingPhoneUpdate(userId) {
+        try {
+            await pool.query(
+                'DELETE FROM auth_user_pending_updates WHERE user_id = ?',
+                [userId]
+            );
+            return true;
+        } catch (error) {
+            throw new Error(`Failed to clear pending phone update: ${error.message}`);
         }
     }
 }

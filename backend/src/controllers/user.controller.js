@@ -5,19 +5,21 @@ class UserController {
     // Authentication
     async register(req, res) {
         try {
-            const { email, password, username, role = 'buyer', business_name } = req.body;
-            
+            const { phone_number, password, username, signuptype, role = 'buyer', business_name } = req.body;
+            console.log("===in user controller : registering user ====");
+            console.log(`Received data: phone_number=${phone_number}, username=${username}, signuptype=${signuptype}, role=${role}, business_name=${business_name}`);   
             const result = await userService.registerUser({
-                email,
+                phone_number,
                 password,
                 username,
+                signuptype,
                 role,
                 business_name
             });
-
+console.log("results from service ,", result);
             res.status(201).json({
                 success: true,
-                message: result.message || 'User registered successfully. Check email for OTP.',
+                message: result.message || 'User registered successfully. Check phone for OTP.',
                 data: result
             });
         } catch (error) {

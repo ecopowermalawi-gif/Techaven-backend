@@ -26,6 +26,7 @@
     "mysql2": "^3.15.3",
     "nodemailer": "^7.0.11",
     "stripe": "^19.1.0",
+    "twilio": "^5.11.1",
     "uuid": "^9.0.1"
   },
   "devDependencies": {

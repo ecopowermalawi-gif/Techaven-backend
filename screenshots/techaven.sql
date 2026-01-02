@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 26, 2025 at 05:12 AM
+-- Generation Time: Jan 02, 2026 at 04:12 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.0.30
 
@@ -26,8 +26,6 @@ SET time_zone = "+00:00";
 --
 -- Table structure for table `admin_audit_logs`
 --
--- Creation: Dec 17, 2025 at 11:01 PM
---
 
 CREATE TABLE `admin_audit_logs` (
   `id` bigint(20) UNSIGNED NOT NULL,
@@ -40,17 +38,10 @@ CREATE TABLE `admin_audit_logs` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `admin_audit_logs`:
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `admin_system_settings`
---
--- Creation: Dec 17, 2025 at 11:01 PM
--- Last update: Dec 26, 2025 at 02:14 AM
 --
 
 CREATE TABLE `admin_system_settings` (
@@ -59,10 +50,6 @@ CREATE TABLE `admin_system_settings` (
   `value` longtext DEFAULT NULL,
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- RELATIONSHIPS FOR TABLE `admin_system_settings`:
---
 
 --
 -- Dumping data for table `admin_system_settings`
@@ -83,18 +70,12 @@ INSERT INTO `admin_system_settings` (`id`, `key_name`, `value`, `updated_at`) VA
 --
 -- Table structure for table `auth_roles`
 --
--- Creation: Dec 17, 2025 at 11:01 PM
---
 
 CREATE TABLE `auth_roles` (
   `id` int(10) UNSIGNED NOT NULL,
   `name` varchar(50) NOT NULL,
   `description` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- RELATIONSHIPS FOR TABLE `auth_roles`:
---
 
 --
 -- Dumping data for table `auth_roles`
@@ -110,8 +91,6 @@ INSERT INTO `auth_roles` (`id`, `name`, `description`) VALUES
 --
 -- Table structure for table `auth_sessions`
 --
--- Creation: Dec 17, 2025 at 11:01 PM
---
 
 CREATE TABLE `auth_sessions` (
   `id` char(36) NOT NULL,
@@ -124,40 +103,38 @@ CREATE TABLE `auth_sessions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- RELATIONSHIPS FOR TABLE `auth_sessions`:
---   `user_id`
---       `auth_users` -> `id`
---
-
---
 -- Dumping data for table `auth_sessions`
 --
 
 INSERT INTO `auth_sessions` (`id`, `user_id`, `refresh_token_hash`, `created_at`, `expires_at`, `user_agent`, `ip_address`) VALUES
 ('04d040f6-346e-4bef-afb2-d79974335322', '172431d9-600c-4cb6-ab67-0506cb96cd63', '193a01b1ddc7db068dcc9e6ffe5ae695a61cc7c561ff1432233c377795dc2ab0', '2025-12-23 17:16:37', '2025-12-30 17:16:37', 'PostmanRuntime/7.51.0', '127.0.0.1'),
-('2fd7fb40-581b-4003-87dd-d58f118e3c34', '54130a68-9ca4-44f2-8a85-e44bd2eff294', '0d602890935e537829b4d64d3e4d45dfe30192267e3665c4a841b24a9c06e2ff', '2025-12-19 12:30:20', '2025-12-26 12:30:20', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
-('32799bc6-b3cf-4981-b2f7-08e19ba065cf', '54130a68-9ca4-44f2-8a85-e44bd2eff294', '92884f8a5d236d5d147d00ade38d890bedf9e6e3e5430ec7d7413abfec433706', '2025-12-20 19:22:25', '2025-12-27 19:22:25', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
-('3d7c7991-fdb9-4c53-b255-7f2565fffef9', '54130a68-9ca4-44f2-8a85-e44bd2eff294', '2e838b871672f24b20e6266ea9e545714a6ef57bdfd818b79954c77bf3b6442c', '2025-12-19 12:30:14', '2025-12-26 12:30:14', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
-('4a761289-6095-466c-945a-bc38d7914b7d', '54130a68-9ca4-44f2-8a85-e44bd2eff294', 'f6aedeadcd030f7ac05b30bbcb1ac9c13a1ceb4d72ce52565fc232560cb884f9', '2025-12-20 05:50:59', '2025-12-27 05:50:59', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
-('5a124244-94b6-4b76-a51e-585a7fbe51ac', '54130a68-9ca4-44f2-8a85-e44bd2eff294', '04a3382b17f11593773bf4a51490adcc470a962b1797730a6ba97368fe73882d', '2025-12-19 12:17:23', '2025-12-26 12:17:23', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
+('0d639abc-bd9c-4de6-8389-6bcc839f6cde', '7de52251-9066-4cfa-824d-c3cd53db9661', '83d1cb39998c39455c23b4ca8dc81619c23722fbaaf33cc854a52e0c01520eda', '2025-12-26 14:56:19', '2026-01-02 14:56:19', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
+('146d2135-b550-4f88-a9bb-8c795374e206', '74e50b38-b3e0-495a-ae5e-83634d56f83f', '62c0c0ffcea3f317d5ee4dbb89868551c4cd435af6677746557a831f0901d524', '2025-12-29 17:16:22', '2026-01-05 17:16:22', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
+('471d52a4-8624-4b7c-9c42-4a039f5964f1', '74e50b38-b3e0-495a-ae5e-83634d56f83f', '888f86174f55d163add5237e19c3126205b4c16e35f7887ab328d9ba4d369758', '2025-12-29 09:11:23', '2026-01-05 09:11:23', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
+('4da1a7e5-c651-49c5-9905-d79d5d8398d7', '74e50b38-b3e0-495a-ae5e-83634d56f83f', '5fda8d5e3fcad0b0c31779ba6c484de0ea1a91ed552a6af2e6abe5e8fcd5c454', '2025-12-29 08:57:19', '2026-01-05 08:57:19', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
+('64279a4b-84e1-4d68-844e-c981b0b30086', '74e50b38-b3e0-495a-ae5e-83634d56f83f', '88e7e918f36099abe457cc3709b6a17fe7efc15ba022ef48414e19877e19109c', '2025-12-29 09:33:10', '2026-01-05 09:33:10', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
+('7077c251-9634-4bf9-b1ce-b99068d5b5dd', '74e50b38-b3e0-495a-ae5e-83634d56f83f', '1e23870d6a1a64592721f3f814b5f39e354577336fbe8d54f641d5bf689752be', '2025-12-29 12:56:01', '2026-01-05 12:56:01', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
 ('73685495-58c9-491a-9dd1-2f1cad7d0e0c', '7de52251-9066-4cfa-824d-c3cd53db9661', 'fe6a451b1f8268b6cd9fe67ea49a7ec4a4487645b5c76baa6d2554315d63a01e', '2025-12-22 15:16:55', '2025-12-29 15:16:54', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
-('b5d62a0e-0cb9-433e-8177-16706d7223ba', '54130a68-9ca4-44f2-8a85-e44bd2eff294', '9e347cbac67a6a5f7df77c2832e50a71ab2f9b74e4ddca3b7b9e8f004f00beff', '2025-12-19 12:14:36', '2025-12-26 12:14:36', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
-('c0cb21dc-d722-4796-8a7a-653e3490057f', '54130a68-9ca4-44f2-8a85-e44bd2eff294', '1d0190d83179da45adc3b644c2d1d957e194728ea7e6766c62e76636c2ccfffa', '2025-12-19 11:24:58', '2025-12-26 11:24:58', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
-('c8cc9b5b-7011-445e-83d2-b0c35dd59b2b', '54130a68-9ca4-44f2-8a85-e44bd2eff294', '0ac6bd2dceaaaf392cc298b30f7d6b345e30d7a5f74782eaaf6f0f3033f90020', '2025-12-21 05:14:02', '2025-12-28 05:14:02', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
-('d6a8c15f-d91b-4502-bfa8-0b8ec529b7a2', '54130a68-9ca4-44f2-8a85-e44bd2eff294', 'ff5602c5039ddd78f9d28f26b298d58e50b43e21b584c75d34ac77060c9b20f7', '2025-12-20 19:49:47', '2025-12-27 19:49:47', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
-('e0d9bd51-810d-46f8-a5b2-74c2ceeea5d9', '54130a68-9ca4-44f2-8a85-e44bd2eff294', '2066aae589234746623fc303da69026114b9a62e5a20a3d0e402defca6bfc22e', '2025-12-20 19:46:43', '2025-12-27 19:46:43', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1');
+('79093506-6e90-48f6-a13c-de6977049429', '74e50b38-b3e0-495a-ae5e-83634d56f83f', '3b6c2ec4ac1b660f60a2be2e9187f44b306490818400d6737223eb783684ada1', '2025-12-29 17:26:44', '2026-01-05 17:26:44', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
+('8f6da048-1a82-4db1-882c-96d337290a95', '74e50b38-b3e0-495a-ae5e-83634d56f83f', 'eeeae73ce69bccb063dddc02d21d721181f072040e53de58c0b046eb3e3c6cdb', '2025-12-29 13:05:43', '2026-01-05 13:05:43', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
+('a07d0d79-a7e5-4f68-aec9-31d9d252c76c', '74e50b38-b3e0-495a-ae5e-83634d56f83f', '2ebc673512c8540380e9106b9c5b0f1d6a7f54fd0dfd24b889fa3f8fea76239c', '2025-12-29 09:33:48', '2026-01-05 09:33:48', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
+('af468c45-a523-4acf-bd09-941d41158666', '74e50b38-b3e0-495a-ae5e-83634d56f83f', '6826a01ebae9544ddc2c562578ea9711e52af348915044b3d03c4fe7b02d62dc', '2025-12-29 09:10:06', '2026-01-05 09:10:06', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
+('b941c4a3-7374-4b67-b079-3a8a04513334', '74e50b38-b3e0-495a-ae5e-83634d56f83f', 'e306251a390dad5551a9bc995a0119a26001d9aee712259f534e83159a5b99ec', '2025-12-29 09:09:04', '2026-01-05 09:09:04', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
+('c775157f-d6b0-42d1-853c-f1e5c27f9011', 'fb6eb0e4-e85e-466f-93fc-cd72c5855c40', '359fb92145ee4782d14406e9142ca16aa2d4cc50624473ea748aeaf13f2e3d4c', '2025-12-30 04:40:46', '2026-01-06 04:40:46', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
+('db3d6aa6-1045-4be1-9711-6a15817522ac', 'fb6fa1ca-4f2c-42ab-9e54-ab4d5850e9f6', '8a1998cb4143fb6f988e6d05767f012a3076afb6eb4c8c5872a048be74d72706', '2025-12-27 02:21:42', '2026-01-03 02:21:42', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
+('e1d6a443-5348-4135-8bae-5c1b847e2b73', '74e50b38-b3e0-495a-ae5e-83634d56f83f', 'c2e5e0d699fb62df09af47042fc70014e81b7e4d14beed6123adfabb27b4cdb7', '2025-12-29 17:17:28', '2026-01-05 17:17:28', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
+('e31211aa-8b29-4eab-ab74-7802d440323e', '74e50b38-b3e0-495a-ae5e-83634d56f83f', '745d93a9a26b04430fb83c75f8fc4ce364929e7584d463f9f3e314d9905b6570', '2025-12-30 04:31:41', '2026-01-06 04:31:41', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1'),
+('edb8e424-ff9b-4fc3-bb5b-d4cf9c712234', '74e50b38-b3e0-495a-ae5e-83634d56f83f', '77fe02ac361a5f984bb0a22b435a8fbe3e3c583d8500cfb18471781698f5c4d9', '2025-12-29 17:27:51', '2026-01-05 17:27:51', 'Thunder Client (https://www.thunderclient.com)', '127.0.0.1');
 
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `auth_users`
 --
--- Creation: Dec 22, 2025 at 06:04 AM
---
 
 CREATE TABLE `auth_users` (
   `id` char(36) NOT NULL,
-  `email` varchar(255) NOT NULL,
+  `phone_number` varchar(255) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
   `username` varchar(100) DEFAULT NULL,
   `otp` varchar(6) DEFAULT NULL,
@@ -168,29 +145,24 @@ CREATE TABLE `auth_users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- RELATIONSHIPS FOR TABLE `auth_users`:
---
-
---
 -- Dumping data for table `auth_users`
 --
 
-INSERT INTO `auth_users` (`id`, `email`, `password_hash`, `username`, `otp`, `otp_expires_at`, `created_at`, `updated_at`, `is_active`) VALUES
+INSERT INTO `auth_users` (`id`, `phone_number`, `password_hash`, `username`, `otp`, `otp_expires_at`, `created_at`, `updated_at`, `is_active`) VALUES
+('026900a1-f496-4662-ab74-9eafa8230ff8', 'ecopowermalawi@gmail.com', '$2a$10$P.tDd5rUoxPNV6r/WMG0t.96E.9aKfXI7qdOVHh.83bS8axfSi0fS', 'ecopower', '357827', '2025-12-27 15:36:50', '2025-12-27 15:26:50', '2025-12-27 15:26:50', 0),
 ('172431d9-600c-4cb6-ab67-0506cb96cd63', 'superadmin001@gmail.com', '$2a$10$Yk5aZYAik4.1AVMbdlG29uE/wYcyacv1MFF9fN2OgbJnIEvdJEAOm', 'superadmin', NULL, NULL, '2025-12-19 11:05:10', NULL, 1),
 ('2e77d931-ee61-4dd7-941b-32cf21981fd2', 'christian@techaven.com', '$2a$10$/bfCuu56A.FIsEs8DgXzJO5aQO1usqk7um2q00bAdkA19Eexak5h.', 'Balui', NULL, NULL, '2025-12-21 08:43:42', NULL, 0),
-('4620dcf0-6607-4e06-b43e-ba4126112132', 'kk@g.com', '$2a$10$hmwupxnOMPnJXia3fNSjrOJpcCXA8kUh6Z26l9EETWPc5c54UgO8a', 'hkg', NULL, NULL, '2025-10-24 10:49:18', NULL, 1),
-('54130a68-9ca4-44f2-8a85-e44bd2eff294', 'superadmin002@gmail.com', '$2a$10$wLdl0eYE5JeAm4uDJBSXAuewdTbTakst8ppUgv1AlV.6q1zYUTX.u', 'superadmi2', NULL, NULL, '2025-12-19 11:14:53', '2025-12-21 05:29:13', 0),
-('74e50b38-b3e0-495a-ae5e-83634d56f83f', 'buyer100@gmail.com', '$2a$10$O1o9sFsH6bCTlM3W2uHrGuV19QthbZwMUemsOtrtvB7wXMXD1LLmG', 'buyer100', NULL, NULL, '2025-12-19 10:54:29', NULL, 1),
-('7de52251-9066-4cfa-824d-c3cd53db9661', 'born2code265@gmail.com', '$2a$10$sJaBsAEimzDBENpjitlqUudH8joDbrwbNWcODU0F3LSiAMBqJRTP6', 'BornToCodeFoundaton', NULL, NULL, '2025-12-22 07:20:05', '2025-12-22 15:15:58', 1),
-('dd8ac68d-368c-401b-8ad1-d71e1875e4f2', 'pincesmnsusa@gmail.com', '$2a$10$LP8jSsXxmgrVu8dSRcTu6eg81qswQvZEw6SKU/88Zo1MVJn72GTAC', 'Preffols', '362836', '2025-12-23 17:19:47', '2025-12-23 17:09:47', '2025-12-23 17:09:47', 0),
-('df14e8ce-2fb5-423d-a0b4-467f45e1bf09', 'john@gmail.com', '$2a$10$zfqlyXdK1ZbwL6A1p7zscuEH0XVlLZFsDrEtbIOrqQqORlrau9Kym', 'john1347', NULL, NULL, '2025-10-24 13:42:10', NULL, 1);
+('58efe176-8cf4-4ad6-a2e1-2cb1f6340027', 'chifundo@gmail.com', '$2a$10$BfV9VmIoOIk58WQvm7IsPOtI2AcVBUoXdZUljCTGYp/wLfKhBJ.bS', 'admin963', '192462', '2025-12-31 17:33:35', '2025-12-30 06:18:26', '2025-12-31 17:23:35', 0),
+('74e50b38-b3e0-495a-ae5e-83634d56f83f', 'buyer100@gmail.com', '$2a$10$jaYqkdtZUHctkJ3pwlWfyeBPDFsbshqic.RPyoq8zYGfvpC9Bq/C2', 'buyer100', NULL, NULL, '2025-12-19 10:54:29', '2025-12-30 04:31:12', 1),
+('7de52251-9066-4cfa-824d-c3cd53db9661', 'born2code265@gmail.com', '$2a$10$sJaBsAEimzDBENpjitlqUudH8joDbrwbNWcODU0F3LSiAMBqJRTP6', 'BornToCodeFoundaton', '967825', '2025-12-27 15:35:31', '2025-12-22 07:20:05', '2025-12-27 15:25:31', 1),
+('f93b9ef2-8f3c-4e5f-9cb3-02b0ce5eaab5', 'admin1234@gmail.com', '$2a$10$/9bEYalh2V8TIWosoOMsg./9U496wxQKmCYUY3ntZldX5.CzOu.wa', 'Admin', NULL, '2025-12-27 02:53:41', '2025-12-27 01:43:41', '2025-12-27 01:59:56', 1),
+('fb6eb0e4-e85e-466f-93fc-cd72c5855c40', 'kdg100@gmail.com', '$2a$10$6OV3YVHJRx8a6BUti3BCyuKypKWtjWFUARejk6n31enhPQ3Dqnm3O', 'kdg', NULL, NULL, '2025-12-30 04:39:22', '2025-12-30 04:40:35', 1),
+('fb6fa1ca-4f2c-42ab-9e54-ab4d5850e9f6', 'admin99@gmail.com', '$2a$10$L/ra6gAGMSatEQy/p1Gn5eiLAm6ZRiRCYDluAxOk0xYiaJ0JQBy1.', 'Admin99', NULL, NULL, '2025-12-27 02:19:15', '2025-12-27 02:21:17', 1);
 
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `auth_users_roles`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `auth_users_roles` (
@@ -200,31 +172,23 @@ CREATE TABLE `auth_users_roles` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- RELATIONSHIPS FOR TABLE `auth_users_roles`:
---   `role_id`
---       `auth_roles` -> `id`
---   `user_id`
---       `auth_users` -> `id`
---
-
---
 -- Dumping data for table `auth_users_roles`
 --
 
 INSERT INTO `auth_users_roles` (`user_id`, `role_id`, `assigned_at`) VALUES
-('4620dcf0-6607-4e06-b43e-ba4126112132', 1, '2025-10-24 12:45:21'),
 ('74e50b38-b3e0-495a-ae5e-83634d56f83f', 2, '2025-12-19 10:54:29'),
 ('172431d9-600c-4cb6-ab67-0506cb96cd63', 1, '2025-12-19 11:05:10'),
-('54130a68-9ca4-44f2-8a85-e44bd2eff294', 1, '2025-12-19 11:14:53'),
 ('7de52251-9066-4cfa-824d-c3cd53db9661', 3, '2025-12-22 07:20:05'),
-('dd8ac68d-368c-401b-8ad1-d71e1875e4f2', 2, '2025-12-23 17:09:47');
+('f93b9ef2-8f3c-4e5f-9cb3-02b0ce5eaab5', 1, '2025-12-27 01:43:41'),
+('fb6fa1ca-4f2c-42ab-9e54-ab4d5850e9f6', 1, '2025-12-27 02:19:15'),
+('026900a1-f496-4662-ab74-9eafa8230ff8', 2, '2025-12-27 15:26:50'),
+('fb6eb0e4-e85e-466f-93fc-cd72c5855c40', 3, '2025-12-30 04:39:22'),
+('58efe176-8cf4-4ad6-a2e1-2cb1f6340027', 1, '2025-12-30 06:18:26');
 
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `auth_user_contacts`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `auth_user_contacts` (
@@ -236,55 +200,40 @@ CREATE TABLE `auth_user_contacts` (
   `verified_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `auth_user_contacts`:
---   `user_id`
---       `auth_users` -> `id`
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `auth_user_profile`
 --
--- Creation: Dec 17, 2025 at 11:01 PM
---
 
 CREATE TABLE `auth_user_profile` (
   `user_id` char(36) NOT NULL,
   `full_name` varchar(255) DEFAULT NULL,
-  `phone` varchar(30) DEFAULT NULL,
+  `email` varchar(255) DEFAULT NULL,
   `dob` date DEFAULT NULL,
   `locale` varchar(10) DEFAULT NULL,
   `metadata` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- RELATIONSHIPS FOR TABLE `auth_user_profile`:
---   `user_id`
---       `auth_users` -> `id`
---
-
---
 -- Dumping data for table `auth_user_profile`
 --
 
-INSERT INTO `auth_user_profile` (`user_id`, `full_name`, `phone`, `dob`, `locale`, `metadata`) VALUES
+INSERT INTO `auth_user_profile` (`user_id`, `full_name`, `email`, `dob`, `locale`, `metadata`) VALUES
+('026900a1-f496-4662-ab74-9eafa8230ff8', NULL, NULL, NULL, NULL, NULL),
 ('172431d9-600c-4cb6-ab67-0506cb96cd63', NULL, NULL, NULL, NULL, NULL),
 ('2e77d931-ee61-4dd7-941b-32cf21981fd2', NULL, NULL, NULL, NULL, NULL),
-('4620dcf0-6607-4e06-b43e-ba4126112132', NULL, NULL, NULL, NULL, NULL),
-('54130a68-9ca4-44f2-8a85-e44bd2eff294', NULL, NULL, NULL, NULL, NULL),
-('74e50b38-b3e0-495a-ae5e-83634d56f83f', NULL, NULL, NULL, NULL, NULL),
+('58efe176-8cf4-4ad6-a2e1-2cb1f6340027', NULL, NULL, NULL, NULL, NULL),
+('74e50b38-b3e0-495a-ae5e-83634d56f83f', 'Smart Virus', '0111666963', '1990-05-15', NULL, '{}'),
 ('7de52251-9066-4cfa-824d-c3cd53db9661', NULL, NULL, NULL, NULL, NULL),
-('dd8ac68d-368c-401b-8ad1-d71e1875e4f2', NULL, NULL, NULL, NULL, NULL),
-('df14e8ce-2fb5-423d-a0b4-467f45e1bf09', NULL, NULL, NULL, NULL, NULL);
+('f93b9ef2-8f3c-4e5f-9cb3-02b0ce5eaab5', NULL, NULL, NULL, NULL, NULL),
+('fb6eb0e4-e85e-466f-93fc-cd72c5855c40', NULL, NULL, NULL, NULL, NULL),
+('fb6fa1ca-4f2c-42ab-9e54-ab4d5850e9f6', NULL, NULL, NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `catalog_categories`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `catalog_categories` (
@@ -295,18 +244,10 @@ CREATE TABLE `catalog_categories` (
   `description` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `catalog_categories`:
---   `parent_id`
---       `catalog_categories` -> `id`
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `catalog_products`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `catalog_products` (
@@ -327,18 +268,10 @@ CREATE TABLE `catalog_products` (
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `catalog_products`:
---   `seller_id`
---       `catalog_sellers` -> `id`
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `catalog_product_categories`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `catalog_product_categories` (
@@ -346,20 +279,10 @@ CREATE TABLE `catalog_product_categories` (
   `category_id` int(10) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `catalog_product_categories`:
---   `category_id`
---       `catalog_categories` -> `id`
---   `product_id`
---       `catalog_products` -> `id`
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `catalog_product_images`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `catalog_product_images` (
@@ -371,18 +294,10 @@ CREATE TABLE `catalog_product_images` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `catalog_product_images`:
---   `product_id`
---       `catalog_products` -> `id`
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `catalog_product_prices`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `catalog_product_prices` (
@@ -394,18 +309,10 @@ CREATE TABLE `catalog_product_prices` (
   `valid_to` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `catalog_product_prices`:
---   `product_id`
---       `catalog_products` -> `id`
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `catalog_product_tags`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `catalog_product_tags` (
@@ -413,21 +320,10 @@ CREATE TABLE `catalog_product_tags` (
   `tag_id` int(10) UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `catalog_product_tags`:
---   `product_id`
---       `catalog_products` -> `id`
---   `tag_id`
---       `catalog_tags` -> `id`
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `catalog_sellers`
---
--- Creation: Dec 25, 2025 at 02:39 AM
--- Last update: Dec 25, 2025 at 02:39 AM
 --
 
 CREATE TABLE `catalog_sellers` (
@@ -441,24 +337,17 @@ CREATE TABLE `catalog_sellers` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- RELATIONSHIPS FOR TABLE `catalog_sellers`:
---   `user_id`
---       `auth_users` -> `id`
---
-
---
 -- Dumping data for table `catalog_sellers`
 --
 
 INSERT INTO `catalog_sellers` (`id`, `user_id`, `business_name`, `registration_number`, `status`, `created_at`, `updated_at`) VALUES
-('31c6eb29-7340-44a6-91ab-a43c8de87aa3', '7de52251-9066-4cfa-824d-c3cd53db9661', 'born To Code Foundation', 'CY-5WJ', 0, '2025-12-22 16:03:03', NULL);
+('31c6eb29-7340-44a6-91ab-a43c8de87aa3', '7de52251-9066-4cfa-824d-c3cd53db9661', 'born To Code Foundation', 'CY-5WJ', 0, '2025-12-22 16:03:03', NULL),
+('6004055b-ebc3-4582-8e32-1b77e424a3b2', 'fb6eb0e4-e85e-466f-93fc-cd72c5855c40', 'KDG shop', NULL, 0, '2025-12-30 04:39:22', NULL);
 
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `catalog_tags`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `catalog_tags` (
@@ -466,16 +355,10 @@ CREATE TABLE `catalog_tags` (
   `name` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `catalog_tags`:
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `escrow_accounts`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `escrow_accounts` (
@@ -488,18 +371,10 @@ CREATE TABLE `escrow_accounts` (
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `escrow_accounts`:
---   `order_id`
---       `order_orders` -> `id`
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `escrow_events`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `escrow_events` (
@@ -510,18 +385,10 @@ CREATE TABLE `escrow_events` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `escrow_events`:
---   `escrow_account_id`
---       `escrow_accounts` -> `id`
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `inventory_inventories`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `inventory_inventories` (
@@ -533,18 +400,10 @@ CREATE TABLE `inventory_inventories` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `inventory_inventories`:
---   `product_id`
---       `catalog_products` -> `id`
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `inventory_transactions`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `inventory_transactions` (
@@ -557,18 +416,10 @@ CREATE TABLE `inventory_transactions` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `inventory_transactions`:
---   `inventory_id`
---       `inventory_inventories` -> `id`
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `notification_notifications`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `notification_notifications` (
@@ -581,18 +432,10 @@ CREATE TABLE `notification_notifications` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `notification_notifications`:
---   `user_id`
---       `auth_users` -> `id`
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `order_addresses`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `order_addresses` (
@@ -609,18 +452,10 @@ CREATE TABLE `order_addresses` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `order_addresses`:
---   `user_id`
---       `auth_users` -> `id`
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `order_items`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `order_items` (
@@ -635,20 +470,10 @@ CREATE TABLE `order_items` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `order_items`:
---   `order_id`
---       `order_orders` -> `id`
---   `product_id`
---       `catalog_products` -> `id`
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `order_orders`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `order_orders` (
@@ -664,24 +489,10 @@ CREATE TABLE `order_orders` (
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `order_orders`:
---   `billing_address_id`
---       `order_addresses` -> `id`
---   `buyer_id`
---       `auth_users` -> `id`
---   `seller_id`
---       `catalog_sellers` -> `id`
---   `shipping_address_id`
---       `order_addresses` -> `id`
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `order_status_history`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `order_status_history` (
@@ -693,18 +504,10 @@ CREATE TABLE `order_status_history` (
   `changed_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `order_status_history`:
---   `order_id`
---       `order_orders` -> `id`
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `payment_methods`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `payment_methods` (
@@ -713,10 +516,6 @@ CREATE TABLE `payment_methods` (
   `display_name` varchar(100) NOT NULL,
   `provider` varchar(100) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- RELATIONSHIPS FOR TABLE `payment_methods`:
---
 
 --
 -- Dumping data for table `payment_methods`
@@ -733,8 +532,6 @@ INSERT INTO `payment_methods` (`id`, `code`, `display_name`, `provider`) VALUES
 --
 -- Table structure for table `payment_payments`
 --
--- Creation: Dec 17, 2025 at 11:01 PM
---
 
 CREATE TABLE `payment_payments` (
   `id` char(36) NOT NULL,
@@ -748,20 +545,10 @@ CREATE TABLE `payment_payments` (
   `updated_at` timestamp NULL DEFAULT NULL ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `payment_payments`:
---   `payment_method_id`
---       `payment_methods` -> `id`
---   `order_id`
---       `order_orders` -> `id`
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `review_product_reviews`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `review_product_reviews` (
@@ -774,20 +561,10 @@ CREATE TABLE `review_product_reviews` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `review_product_reviews`:
---   `product_id`
---       `catalog_products` -> `id`
---   `user_id`
---       `auth_users` -> `id`
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `shipping_providers`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `shipping_providers` (
@@ -797,16 +574,10 @@ CREATE TABLE `shipping_providers` (
   `contact_info` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`contact_info`))
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- RELATIONSHIPS FOR TABLE `shipping_providers`:
---
-
 -- --------------------------------------------------------
 
 --
 -- Table structure for table `shipping_shipments`
---
--- Creation: Dec 17, 2025 at 11:01 PM
 --
 
 CREATE TABLE `shipping_shipments` (
@@ -819,14 +590,6 @@ CREATE TABLE `shipping_shipments` (
   `delivered_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- RELATIONSHIPS FOR TABLE `shipping_shipments`:
---   `order_id`
---       `order_orders` -> `id`
---   `provider_id`
---       `shipping_providers` -> `id`
---
 
 --
 -- Indexes for dumped tables
@@ -868,7 +631,7 @@ ALTER TABLE `auth_sessions`
 --
 ALTER TABLE `auth_users`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `ux_users_email` (`email`),
+  ADD UNIQUE KEY `ux_users_email` (`phone_number`),
   ADD UNIQUE KEY `ux_users_username` (`username`),
   ADD KEY `idx_users_created_at` (`created_at`),
   ADD KEY `idx_users_is_active` (`is_active`),

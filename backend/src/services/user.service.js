@@ -1,48 +1,58 @@
 import UserModel from '../models/user.model.js';
-import emailService from './email.service.js';
+import smsService from './sms.service.js'; // Changed from email service
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 import pool from '../config/database.js';
+
 class UserService {
     // Registration
     async registerUser(userData) {
         try {
-
-            console.log("hello here is the data i user service",userData );
+            console.log("hello here is the data in user service", userData);
+            
             // Check if user exists
-            const emailExists = await UserModel.checkEmailExists(userData.email);
-            if (emailExists) {
-                throw new Error('User with this email already exists');
+            const phoneExists = await UserModel.checkPhoneNumberExists(userData.phone_number);
+            if (phoneExists) {
+                console.log("phone number already existed ", phoneExists);
+                throw new Error('Phone number already in use');
             }
-            console.log("checking email", emailExists);
+            console.log("checking phone number", phoneExists);
 
             if (userData.username) {
                 const usernameExists = await UserModel.checkUsernameExists(userData.username);
                 if (usernameExists) {
-                    console.log("user name already existed ", usernameExists)
+                    console.log("user name already existed ", usernameExists);
                     throw new Error('Username already taken');
                 }
             }
-console.log("==== creting a user =====");
-            // Create user (inactive until email verified)
+
+            console.log("==== creating a user =====");
+            // Create user (inactive until phone verified)
             const userId = await UserModel.createUser(userData);
-console.log("Here is the user id ", userId);
+            console.log("Here is the user id ", userId);
+
             // Generate and send OTP
             const otp = this.generateOTP();
-
-            console.log("here is he otp genertotped ",otp );
+            console.log("here is the OTP generated ", otp);
 
             await UserModel.storeOTP(userId, otp);
+            console.log('stored OTP for user', userId);
+console.log("==== sending OTP to phone number =====");
+            // Send OTP via SMS instead of email
+            //const phoneNumber = userData.phone_number;
+              const phoneNumber = userData.phone_number; // For testing purposes only
+            if (phoneNumber) {
+                const smsres = await smsService.sendOTPSMS(phoneNumber, otp); // Using Twilio Verify service
+                console.log("Sent OTP verification to phone", smsres);
+            } else {
+                throw new Error('Phone number is required for registration');
+            }
 
-            console.log('stored OTP for user', userId)
-            const email3 = 'born2code265@gmail.com';
-            await emailService.sendOTPEmail(email3, otp);
-console.log("seds the otp to emil d");
             return {
                 id: userId,
-                email: userData.email,
+                phone_number: phoneNumber,
                 username: userData.username,
-                message: `User registered. Check your email for OTP to verify your account.: ${otp}`
+                message: `User registered. Check your phone for OTP to verify your account.`
             };
         } catch (error) {
             throw new Error(`Registration failed: ${error.message}`);
@@ -54,59 +64,65 @@ console.log("seds the otp to emil d");
         return Math.floor(100000 + Math.random() * 900000).toString();
     }
 
-    // Send OTP to email
-    async sendOTP(email) {
+    // Send OTP to phone
+    async sendOTP(phoneNumber) {
         try {
-            
             // Check if user exists
-            const user = await UserModel.findUserByEmail(email);
+            const user = await UserModel.findUserByPhone(phoneNumber);
             if (!user) {
                 throw new Error('User not found');
             }
 
-            // Generate and store OTP
+            // Generate and store OTP (fallback - Twilio will generate its own)
             const otp = this.generateOTP();
             await UserModel.storeOTP(user.id, otp);
-            await emailService.sendOTPEmail(email, otp);
+            
+            // Send OTP via SMS using Twilio Verify
+            await smsService.sendOTP(phoneNumber);
 
             return {
                 success: true,
-                message: `OTP sent to your email ${otp}`
+                message: `OTP sent to your phone ${phoneNumber}`
             };
         } catch (error) {
             throw new Error(`Failed to send OTP: ${error.message}`);
         }
     }
 
-    // Verify OTP and activate account
-    async verifyOTP(email, otp) {
-
-        const user_id = await UserModel.findUserByEmail(email);
-        const userId = user_id.id;
-         console.log("user id in verify otp : email, : otp", userId, email, otp );
+    // Verify OTP and activate account using Twilio Verify
+    async verifyOTP(phoneNumber, otp) {
         try {
-            // Validate OTP
-            const isValid = await UserModel.validateOTP(userId, otp);
-            if (!isValid) {
+            // Find user by phone
+            const user = await UserModel.findUserByPhone(phoneNumber);
+            if (!user) {
+                throw new Error('User not found');
+            }
+            
+            console.log("user id in verify OTP : phoneNumber, : otp", user.id, phoneNumber, otp);
+
+            // Verify OTP using Twilio Verify service
+            const verificationResult = await smsService.verifyOTP(phoneNumber, otp);
+            
+            if (!verificationResult.success) {
                 throw new Error('Invalid or expired OTP');
             }
 
-            // Clear used OTP
-            await UserModel.clearOTP(userId);
+            // Clear used OTP from database
+            await UserModel.clearOTP(user.id);
 
             // Activate user account
-            await UserModel.updateUser(userId, { is_active: 1 });
+            await UserModel.updateUser(user.id, { is_active: 1 });
 
             // Get updated user
-            const user = await UserModel.findUserById(userId);
+            const updatedUser = await UserModel.findUserById(user.id);
 
             return {
                 success: true,
-                message: 'Email verified successfully. Account activated.',
+                message: 'Phone verified successfully. Account activated.',
                 user: {
-                    id: user.id,
-                    email: user.email,
-                    username: user.username
+                    id: updatedUser.id,
+                    phone_number: updatedUser.phone_number,
+                    username: updatedUser.username
                 }
             };
         } catch (error) {
@@ -114,11 +130,59 @@ console.log("seds the otp to emil d");
         }
     }
 
-    // Login
-    async loginUser(email, password, sessionData = {}) {
+    // Alternative OTP verification (using stored OTP in database - fallback)
+    async verifyStoredOTP(phoneNumber, otp) {
         try {
-            // Find user
-            const user = await UserModel.findUserByEmail(email);
+            const user = await UserModel.findUserByPhone(phoneNumber);
+            if (!user) {
+                throw new Error('User not found');
+            }
+
+            // Validate OTP from database
+            const isValid = await UserModel.validateOTP(user.id, otp);
+            if (!isValid) {
+                throw new Error('Invalid or expired OTP');
+            }
+
+            // Clear used OTP
+            await UserModel.clearOTP(user.id);
+
+            // Activate user account
+            await UserModel.updateUser(user.id, { is_active: 1 });
+
+            // Get updated user
+            const updatedUser = await UserModel.findUserById(user.id);
+
+            return {
+                success: true,
+                message: 'Phone verified successfully. Account activated.',
+                user: {
+                    id: updatedUser.id,
+                    phone_number: updatedUser.phone_number,
+                    username: updatedUser.username
+                }
+            };
+        } catch (error) {
+            throw new Error(`OTP verification failed: ${error.message}`);
+        }
+    }
+
+    // Login (now using phone number or username instead of email)
+    async loginUser(identifier, password, sessionData = {}) {
+        try {
+            // Find user by phone or username
+            let user;
+            if (identifier.includes('@')) {
+                // Email login (for backward compatibility)
+                user = await UserModel.findUserByEmail(identifier);
+            } else if (/^\d+$/.test(identifier)) {
+                // Phone number login
+                user = await UserModel.findUserByPhone(identifier);
+            } else {
+                // Username login
+                user = await UserModel.findUserByUsername(identifier);
+            }
+
             if (!user) {
                 throw new Error('Invalid credentials');
             }
@@ -130,7 +194,6 @@ console.log("seds the otp to emil d");
 
             // Verify password
             const isValid = await bcrypt.compare(password, user.password_hash);
-
             if (!isValid) {
                 throw new Error('Invalid credentials');
             }
@@ -156,7 +219,6 @@ console.log("seds the otp to emil d");
         }
     }
 
-
     // Token Refresh
     async refreshAccessToken(refreshToken) {
         try {
@@ -176,7 +238,7 @@ console.log("seds the otp to emil d");
                 accessToken,
                 user: {
                     id: user.id,
-                    email: user.email,
+                    phone_number: user.phone_number,
                     username: user.username,
                     roles: user.roles
                 }
@@ -230,10 +292,10 @@ console.log("seds the otp to emil d");
             // Revoke all sessions for security
             await UserModel.revokeAllUserSessions(userId);
 
-            // Send password change notification
+            // Send password change notification via SMS
             const user = await UserModel.findUserById(userId);
-            if (user) {
-                await emailService.sendPasswordChangeNotification(user.email);
+            if (user && user.phone_number) {
+                await smsService.sendPasswordChangeNotification(user.phone_number);
             }
 
             return true;
@@ -259,7 +321,7 @@ console.log("seds the otp to emil d");
                     const user = await UserModel.findUserById(userId);
                     await pool.query(
                         'INSERT INTO catalog_sellers (id, user_id, business_name) VALUES (?, ?, ?)',
-                        [uuidv4(), userId, user.username || user.email]
+                        [uuidv4(), userId, user.username || user.phone_number]
                     );
                 }
             }
@@ -307,26 +369,46 @@ console.log("seds the otp to emil d");
     }
 
     // Password Reset
-    async requestPasswordReset(email) {
+    async requestPasswordReset(identifier) {
         try {
-            const { resetToken, userId, expiresAt } = await UserModel.createPasswordResetToken(email);
+            let user;
             
+            // Find user by phone or email
+            if (/^\d+$/.test(identifier)) {
+                // Phone number
+                user = await UserModel.findUserByPhone(identifier);
+            } else if (identifier.includes('@')) {
+                // Email (for backward compatibility)
+                user = await UserModel.findUserByEmail(identifier);
+            } else {
+                // Username
+                user = await UserModel.findUserByUsername(identifier);
+            }
+            
+            if (!user) {
+                throw new Error('User not found');
+            }
+
+            const { resetToken, userId, expiresAt } = await UserModel.createPasswordResetToken(user.id);
+            
+            console.log(`reset password for user is : ${userId}: === token :`, resetToken);
+
             // Generate reset link
             const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}&userId=${userId}`;
-            console.log(`reset password for user is : ${userId}: === link :`, resetLink);
-            console.log('== reset token :', resetToken)
-
-            // Send reset email
-            // await emailService.sendPasswordResetEmail(email, {
-            //     resetLink,
-            //     expiresAt: expiresAt.toLocaleString()
-            // });
+            
+            // Send reset notification via SMS if phone exists
+            if (user.phone_number) {
+                await smsService.sendPasswordResetNotification(user.phone_number, {
+                    resetLink,
+                    expiresAt: expiresAt.toLocaleString()
+                });
+            }
 
             return {
                 success: true,
-                message: `Password reset email sent: ${resetToken}`,
-           
-                resetToken: resetToken
+                message: `Password reset instructions sent`,
+                resetToken: resetToken,
+                phoneNumber: user.phone_number
             };
         } catch (error) {
             throw new Error(`Password reset request failed: ${error.message}`);
@@ -335,8 +417,7 @@ console.log("seds the otp to emil d");
 
     async resetPassword(token, userId, newPassword) {
         try {
-
-             console.log(`==in service::=user id : ${userId} ==== token : ${token} ==== new password ${newPassword}`);
+            console.log(`==in service::=user id : ${userId} ==== token : ${token} ==== new password ${newPassword}`);
            
             // Validate token
             const isValid = await UserModel.validatePasswordResetToken(token, userId);
@@ -353,10 +434,10 @@ console.log("seds the otp to emil d");
             // Revoke all sessions
             await UserModel.revokeAllUserSessions(userId);
 
-            // Send confirmation email
+            // Send confirmation via SMS
             const user = await UserModel.findUserById(userId);
-            if (user) {
-                await emailService.sendPasswordResetConfirmation(user.email);
+            if (user && user.phone_number) {
+                await smsService.sendPasswordResetConfirmation(user.phone_number);
             }
 
             return true;
@@ -387,7 +468,6 @@ console.log("seds the otp to emil d");
     }
 
     //activate shop
-    
     async activateShop(userId) {
         try {
             await UserModel.updateUser(userId, { is_active: true });
@@ -425,11 +505,11 @@ console.log("seds the otp to emil d");
     }
 
     // Search and Filter
- async searchUsers(searchTerm, filters = {}) {
+    async searchUsers(searchTerm, filters = {}) {
         try {
             const [users] = await pool.query(`
                 SELECT 
-                    u.id, u.email, u.username, u.created_at,
+                    u.id, u.email, u.username, u.phone_number, u.created_at,
                     up.full_name, up.phone,
                     GROUP_CONCAT(DISTINCT r.name) as roles
                 FROM auth_users u
@@ -439,12 +519,14 @@ console.log("seds the otp to emil d");
                 WHERE (
                     u.email LIKE ? OR 
                     u.username LIKE ? OR 
+                    u.phone_number LIKE ? OR 
                     up.full_name LIKE ?
                 )
                 AND u.is_active = ?
                 GROUP BY u.id
                 ORDER BY u.created_at DESC
             `, [
+                `%${searchTerm}%`,
                 `%${searchTerm}%`,
                 `%${searchTerm}%`,
                 `%${searchTerm}%`,
@@ -457,6 +539,78 @@ console.log("seds the otp to emil d");
             }));
         } catch (error) {
             throw new Error(`Search failed: ${error.message}`);
+        }
+    }
+
+    // New method: Send OTP for phone verification
+    async sendPhoneVerificationOTP(phoneNumber) {
+        try {
+            const user = await UserModel.findUserByPhone(phoneNumber);
+            if (!user) {
+                throw new Error('User not found');
+            }
+
+            // Send OTP using Twilio Verify
+            await smsService.sendOTP(phoneNumber);
+
+            return {
+                success: true,
+                message: 'Verification OTP sent to your phone'
+            };
+        } catch (error) {
+            throw new Error(`Failed to send verification OTP: ${error.message}`);
+        }
+    }
+
+    // New method: Verify phone with Twilio Verify
+    async verifyPhoneNumber(phoneNumber, otp) {
+        try {
+            const user = await UserModel.findUserByPhone(phoneNumber);
+            if (!user) {
+                throw new Error('User not found');
+            }
+
+            // Verify using Twilio
+            const verificationResult = await smsService.verifyOTP(phoneNumber, otp);
+            
+            if (!verificationResult.success) {
+                throw new Error('Invalid or expired OTP');
+            }
+
+            // Update user phone verification status
+            await UserModel.updateUser(user.id, { phone_verified: true });
+
+            return {
+                success: true,
+                message: 'Phone number verified successfully'
+            };
+        } catch (error) {
+            throw new Error(`Phone verification failed: ${error.message}`);
+        }
+    }
+
+    // New method: Update phone number with verification
+    async updatePhoneNumber(userId, newPhoneNumber) {
+        try {
+            // Check if phone number is already in use
+            const phoneExists = await UserModel.checkPhoneNumberExists(newPhoneNumber);
+            if (phoneExists) {
+                throw new Error('Phone number already in use');
+            }
+
+            // Send OTP to new phone number
+            await smsService.sendOTP(newPhoneNumber);
+
+            // Store pending phone update
+            const otp = this.generateOTP();
+            await UserModel.storePendingPhoneUpdate(userId, newPhoneNumber, otp);
+
+            return {
+                success: true,
+                message: 'OTP sent to new phone number for verification'
+            };
+        } catch (error) {
+            throw new Error(`Failed to update phone number: ${error.message}`);
         }
     }
 }
