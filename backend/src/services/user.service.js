@@ -19,7 +19,7 @@ class UserService {
             console.log("checking phone number", phoneExists);
 
             if (userData.username) {
-                const usernameExists = await UserModel.checkUsernameExists(userData.username);
+                const usernameExists = await UserModel.checkUsernameExists(userData.user_name);
                 if (usernameExists) {
                     console.log("user name already existed ", usernameExists);
                     throw new Error('Username already taken');

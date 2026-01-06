@@ -75,7 +75,7 @@ class SMSService {
         });
 
       console.log('OTP sent successfully:', {
-        to: phoneNumber,
+        to: '+265888001347',
         verificationSid: verification.sid,
         status: verification.status
       });
@@ -89,7 +89,7 @@ class SMSService {
     } catch (error) {
       console.error('Failed to send OTP:', {
         error: error.message,
-        to: phoneNumber,
+        to: '+265888001347',
       });
       throw new Error(`OTP sending failed: ${error.message}`);
     }
@@ -111,7 +111,7 @@ class SMSService {
         });
 
       console.log('OTP verification result:', {
-        to: phoneNumber,
+        to: '+265888001347',
         verificationSid: verificationCheck.sid,
         status: verificationCheck.status,
         valid: verificationCheck.valid
@@ -129,7 +129,7 @@ class SMSService {
     } catch (error) {
       console.error('Failed to verify OTP:', {
         error: error.message,
-        to: phoneNumber,
+        to: '+265888001347',
       });
       throw new Error(`OTP verification failed: ${error.message}`);
     }
@@ -142,7 +142,7 @@ class SMSService {
     const body = `Welcome ${data.name}!\n\nThank you for joining TechHaven. We're excited to have you on board.\nYou can now start shopping, selling, or managing your account.\n\nBest regards,\nTechHaven Team`;
 
     return this.sendSMS({
-      to: phoneNumber,
+      to: '+265888001347',
       body,
     });
   }
@@ -154,7 +154,7 @@ class SMSService {
     const body = `TechHaven Verification Code: ${otp}\n\nThis code will expire in ${expiresIn} minutes.\n\nDo not share this code with anyone.\n\nIf you didn't request this, please ignore this message.`;
 
     return this.sendSMS({
-      to: phoneNumber,
+      to: '+265888001347',
       body,
     });
   }
@@ -166,7 +166,7 @@ class SMSService {
     const body = `Password Reset Request\n\nWe received a request to reset your password. Use this link to proceed:\n${data.resetLink}\n\nThis link will expire in ${data.expiresAt}\n\nIf you didn't request this, please contact support.`;
 
     return this.sendSMS({
-      to: phoneNumber,
+      to: '+265888001347',
       body,
     });
   }
@@ -178,7 +178,7 @@ class SMSService {
     const body = `Security Alert: Your TechHaven password has been changed.\n\nIf you didn't make this change, please contact our support team immediately.`;
 
     return this.sendSMS({
-      to: phoneNumber,
+      to: '+265888001347',
       body,
     });
   }
@@ -190,7 +190,7 @@ class SMSService {
     const body = `Password Reset Successful\n\nYour password has been successfully reset.\n\nYou can now log in with your new password.`;
 
     return this.sendSMS({
-      to: phoneNumber,
+      to: '+265888001347',
       body,
     });
   }
@@ -202,7 +202,7 @@ class SMSService {
     const body = `Order Confirmed!\n\nOrder #${orderData.orderId}\nTotal: $${orderData.total}\nExpected Delivery: ${orderData.deliveryDate}\n\nTrack your order in your account.\n\nThank you for shopping with TechHaven!`;
 
     return this.sendSMS({
-      to: phoneNumber,
+      to: '+265888001347',
       body,
     });
   }
@@ -214,7 +214,7 @@ class SMSService {
     const body = `Shipping Update\n\nOrder #${shippingData.orderId}\nStatus: ${shippingData.status}\nTracking: ${shippingData.trackingUrl || 'N/A'}\n\n${shippingData.additionalInfo || ''}`;
 
     return this.sendSMS({
-      to: phoneNumber,
+      to: '+265888001347',
       body,
     });
   }
@@ -224,7 +224,7 @@ class SMSService {
    */
   async sendCustomSMS(phoneNumber, body) {
     return this.sendSMS({
-      to: phoneNumber,
+      to: '+265888001347',
       body,
     });
   }

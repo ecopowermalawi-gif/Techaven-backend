@@ -166,13 +166,12 @@ export const productValidationRules = {
 // ========== USER VALIDATION RULES ==========
 export const userValidationRules = {
     register: [
-        body('email')
-            .isEmail().withMessage('Please provide a valid email')
-            .normalizeEmail(),
+        body('phone_number')
+            .isString().withMessage('Please provide a valid phone number'),
         body('password')
             .isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
             .matches(/\d/).withMessage('Password must contain a number'),
-        body('username')
+        body('user_name')
             .optional()
             .isLength({ min: 3 }).withMessage('Username must be at least 3 characters')
             .matches(/^[a-zA-Z0-9_]+$/).withMessage('Username can only contain letters, numbers, and underscores'),
@@ -180,7 +179,7 @@ export const userValidationRules = {
             .optional()
             .isIn(['user', 'seller', 'buyer', 'admin']).withMessage('Invalid role'),
         body('business_name')
-            .if(body('role').equals('seller'))
+            .if(body('role').equals('admin'))
             .notEmpty().withMessage('Business name is required for sellers')
             .trim()
             .isLength({ min: 2, max: 255 }).withMessage('Business name must be between 2 and 255 characters')
