@@ -18,7 +18,7 @@ class UserModel {
             await connection.query(
                 `INSERT INTO auth_users (id, phone_number, password_hash, username, email, is_active) 
                  VALUES (?, ?, ?, ?, ?, ?)`,
-                [userId, userData.phone_number, passwordHash, userData.username, userData.email || null, 0]
+                [userId, userData.phonenumber, passwordHash, userData.username, userData.email || null, 0]
             );
 
             // Create profile

@@ -11,7 +11,7 @@ class UserService {
             console.log("hello here is the data in user service", userData);
             
             // Check if user exists
-            const phoneExists = await UserModel.checkPhoneNumberExists(userData.phone_number);
+            const phoneExists = await UserModel.checkPhoneNumberExists(userData.phonenumber);
             if (phoneExists) {
                 console.log("phone number already existed ", phoneExists);
                 throw new Error('Phone number already in use');
@@ -19,7 +19,7 @@ class UserService {
             console.log("checking phone number", phoneExists);
 
             if (userData.username) {
-                const usernameExists = await UserModel.checkUsernameExists(userData.user_name);
+                const usernameExists = await UserModel.checkUsernameExists(userData.username);
                 if (usernameExists) {
                     console.log("user name already existed ", usernameExists);
                     throw new Error('Username already taken');
@@ -40,7 +40,7 @@ class UserService {
 console.log("==== sending OTP to phone number =====");
             // Send OTP via SMS instead of email
             //const phoneNumber = userData.phone_number;
-              const phoneNumber = userData.phone_number; // For testing purposes only
+              const phoneNumber = userData.phonenumber; // For testing purposes only
             if (phoneNumber) {
                 const smsres = await smsService.sendOTPSMS(phoneNumber, otp); // Using Twilio Verify service
                 console.log("Sent OTP verification to phone", smsres);
