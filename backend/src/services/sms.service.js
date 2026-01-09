@@ -4,13 +4,13 @@ class SMSService {
   constructor() {
     // Initialize Twilio client
     this.client = twilio(
-      process.env.TWILIO_ACCOUNT_SID,
-      process.env.TWILIO_AUTH_TOKEN 
+      'ACf5be3b77a70d5c9ee7fa564b8038fcfe',
+      '25766e0721d988d90b1286a227883c66'
     );
 
     // Twilio Verify Service SID
-    this.verifyServiceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
-    
+    this.verifyServiceSid ='VA65c38be8901a0ebfca697d26fb4885ab';
+
     // Sender phone number (Twilio phone number  +18146802757)
     this.senderNumber = '+18146802757';
   }
@@ -23,10 +23,10 @@ class SMSService {
    * @returns {Promise<Object>} - Send result
    */
   async sendSMS(options) {
-    let { to = process.env.DEFAULT_PHONE_NUMBER, body } = options;
+    let { to = '+1234567890', body } = options;
 
     if (!to || !body) {
-      to = process.env.DEFAULT_PHONE_NUMBER || '+265888001347';
+      to = '+1234567890';
       body = 'This is a test SMS sent from the TechHaven SMS service.';
     }
 

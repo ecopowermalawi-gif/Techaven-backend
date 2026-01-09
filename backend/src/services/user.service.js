@@ -70,19 +70,22 @@ console.log("==== sending OTP to phone number =====");
     // Send OTP to phone
     async sendOTP(phoneNumber) {
         try {
+            console.log("==== sending OTP to phone number =====", phoneNumber);
             // Check if user exists
             const user = await UserModel.findUserByPhone(phoneNumber);
             if (!user) {
+                console.log("user not found for phone number ", phoneNumber);
                 throw new Error('User not found');
             }
-
+console.log("user found for phone number ", user.id);
             // Generate and store OTP (fallback - Twilio will generate its own)
             const otp = this.generateOTP();
+            console.log("generated OTP is ", otp);
             await UserModel.storeOTP(user.id, otp);
-            
+            console.log('stored OTP for user', user.id);
             // Send OTP via SMS using Twilio Verify
             await smsService.sendOTP(phoneNumber);
-
+console.log("Sent OTP to phone number via Twilio Verify");
             return {
                 success: true,
                 message: `OTP sent to your phone ${phoneNumber}`
