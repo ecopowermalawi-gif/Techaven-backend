@@ -177,7 +177,7 @@ console.log("Sent OTP to phone number via Twilio Verify");
             const user = await UserModel.findUserByPhone(phonenumber);
             console.log("===user found for phone number ::", user);
             if (!user) {
-                console.log("failled to found the user")
+                console.log("failled to found the user");
                 throw new Error('User not found');
             }
 
@@ -189,13 +189,13 @@ console.log("Sent OTP to phone number via Twilio Verify");
                 console.log("OTP is invalid or expired ");
                 throw new Error('Invalid or expired OTP');
             }
-console.log("OTP is valid ");
+
             // Clear used OTP
            const clearOTPresuts = await UserModel.clearOTP(user.id);
 console.log("cleared OTP results ::", clearOTPresuts);
 
             // Activate user account
-           const updateUserResults = await UserModel.updateUser(user.id, { is_active: 1 });
+           const updateUserResults = await UserModel.updateUser(user.id, { is_active: 1 , phone_verified: 1});
 console.log("Results form update user ", updateUserResults);
             // Get updated user
             const updatedUser = await UserModel.findUserById(user.id);

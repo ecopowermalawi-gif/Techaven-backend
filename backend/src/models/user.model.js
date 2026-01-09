@@ -64,7 +64,7 @@ class UserModel {
                 SELECT 
                     u.*,
                     GROUP_CONCAT(DISTINCT r.name) as roles,
-                    up.full_name, up.email as profile_email, up.dob, up.locale,
+                    up.full_name, up.dob, up.locale,
                     cs.business_name as seller_business
                 FROM auth_users u
                 LEFT JOIN auth_users_roles ur ON u.id = ur.user_id
@@ -220,10 +220,7 @@ class UserModel {
             const updateFields = [];
             const params = [];
 
-            if (updates.email !== undefined) {
-                updateFields.push('email = ?');
-                params.push(updates.email);
-            }
+          
 
             if (updates.phone_number !== undefined) {
                 updateFields.push('phone_number = ?');
@@ -233,6 +230,10 @@ class UserModel {
             if (updates.username !== undefined) {
                 updateFields.push('username = ?');
                 params.push(updates.username);
+            }
+              if (updates.email !== undefined) {
+                updateFields.push('email = ?');
+                params.push(updates.email);
             }
 
             if (updates.is_active !== undefined) {
@@ -764,10 +765,12 @@ class UserModel {
             
             // Check if OTP exists and hasn't expired
             if (!user.otp || user.otp !== otp) {
+                console.log("OTP dont exit", user.otp, otp)
                 return false;
             }
-
+console.log("")
             if (new Date() > new Date(user.otp_expires_at)) {
+                console.log("check if not expired" ,user.otp_expires_at);
                 return false; // OTP has expired
             }
 
