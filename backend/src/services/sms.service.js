@@ -23,10 +23,10 @@ class SMSService {
    * @returns {Promise<Object>} - Send result
    */
   async sendSMS(options) {
-    let { to = '+1234567890', body } = options;
+    let { to = '+265888001347', body } = options;
 
     if (!to || !body) {
-      to = '+1234567890';
+      to = '+265888001347';
       body = 'This is a test SMS sent from the TechHaven SMS service.';
     }
 
@@ -62,11 +62,12 @@ class SMSService {
 
   /**
    * Send OTP verification via SMS
-   * @param {string} phoneNumber - Recipient phone number
+   * @param {string} phonenumber - Recipient phone number
    * @returns {Promise<Object>} - Verification result
    */
-  async sendOTP(phoneNumber) {
+  async sendOTP(phonenumber) {
     try {
+      const  phoneNumber = '+265888001347';
       const verification = await this.client.verify.v2.services(this.verifyServiceSid)
         .verifications
         .create({
@@ -97,11 +98,13 @@ class SMSService {
 
   /**
    * Verify OTP code
-   * @param {string} phoneNumber - Recipient phone number
+   * @param {string} phonenumber - Recipient phone number
    * @param {string} code - OTP code to verify
    * @returns {Promise<Object>} - Verification check result
    */
-  async verifyOTP(phoneNumber, code) {
+  async verifyOTP(phonenumber, code) {
+    //for tetsing purposes only 
+    const phoneNumber = '+265888001347';
     try {
       const verificationCheck = await this.client.verify.v2.services(this.verifyServiceSid)
         .verificationChecks
@@ -151,7 +154,7 @@ class SMSService {
    * Send OTP notification SMS
    */
   async sendOTPSMS(phoneNumber, otp, expiresIn = 10) {
-    const body = `TechHaven Verification Code: ${otp}\n\nThis code will expire in ${expiresIn} minutes.\n\nDo not share this code with anyone.\n\nIf you didn't request this, please ignore this message.`;
+    const body = `Techaven Verification Code: ${otp}\n\nThis code will expire in ${expiresIn} minutes ${phoneNumber}.\n\nDo not share this code with anyone.\n\nIf you didn't request this, please ignore this message.`;
 
     return this.sendSMS({
       to: '+265888001347',
@@ -238,8 +241,8 @@ class SMSService {
     
     // If it doesn't start with +, add +
     if (!phoneNumber.startsWith('+')) {
-      // Assuming US/Canada numbers for default, adjust as needed
-      return `+1${cleaned}`;
+      // uses malawian defalt
+      return `+265${cleaned}`;
     }
     
     return phoneNumber;

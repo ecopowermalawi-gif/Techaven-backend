@@ -34,6 +34,12 @@ router.post(
     validate(userValidationRules.verifyOTP),
     userController.verifyOTP
 );
+// verified stored otp
+router.post(
+    '/verify-otp-stored',
+    //validate(userValidationRules.verifyOTP),
+    userController.verifyStoredOTP
+);
 
 //resend otp
 

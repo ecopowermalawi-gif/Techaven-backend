@@ -246,9 +246,6 @@ export const userValidationRules = {
     ],
 
     verifyOTP: [
-        body('email')
-            .isEmail().withMessage('Please provide a valid email')
-            .normalizeEmail(),
         body('otp')
             .notEmpty().withMessage('OTP is required')
             .isLength({ min: 6, max: 6 }).withMessage('OTP must be 6 digits')

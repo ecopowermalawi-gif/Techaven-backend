@@ -32,16 +32,16 @@ console.log("results from service ,", result);
 
     async sendOTP(req, res) {
         try {
-            const { email } = req.body;
+            const { phonenumber } = req.body;
 
-            if (!email) {
+            if (!phonenumber) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Email is required'
+                    message: 'phonenumber is required'
                 });
             }
 
-            const result = await userService.sendOTP(email);
+            const result = await userService.sendOTP(phonenumber);
 
             res.json({
                 success: true,
@@ -57,16 +57,16 @@ console.log("results from service ,", result);
     }
  async testOTP(req, res) {
         try {
-            const email = 'born2code265@gmail.com';
+            const phonenumber = 'born2code265@gmail.com';
 
-            if (!email) {
+            if (!phonenumber) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Email is required'
+                    message: 'phonenumber is required'
                 });
             }
 
-            const result = await userService.sendOTP(email);
+            const result = await userService.sendOTP(phonenumber);
 
             res.json({
                 success: true,
@@ -84,16 +84,16 @@ console.log("results from service ,", result);
 //resend otp 
       async resendOTP(req, res) {
         try {
-            const { email } = req.body;
+            const { phonenumber } = req.body;
 
-            if (!email) {
+            if (!phonenumber) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Email is required'
+                    message: 'phonenumber is required'
                 });
             }
 
-            const result = await userService.sendOTP(email);
+            const result = await userService.sendOTP(phonenumber);
 
             res.json({
                 success: true,
@@ -111,16 +111,41 @@ console.log("results from service ,", result);
 
     async verifyOTP(req, res) {
         try {
-            const { email, otp } = req.body;
+            const { phonenumber, otp } = req.body;
 
-            if (!email || !otp) {
+            if (!phonenumber || !otp) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Email and OTP are required'
+                    message: 'phonenumber and OTP are required'
                 });
             }
 
-            const result = await userService.verifyOTP(email, otp);
+            const result = await userService.verifyOTP(phonenumber, otp);
+            res.json({
+                success: true,
+                message: result.message,
+                data: result.user
+            });
+        } catch (error) {
+            console.error('OTP verification error:', error);
+            res.status(400).json({
+                success: false,
+                message: error.message
+            });
+        }
+    }
+     async verifyStoredOTP(req, res) {
+        try {
+            const { phonenumber, otp } = req.body;
+
+            if (!phonenumber || !otp) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'phonenumber and OTP are required'
+                });
+            }
+
+            const result = await userService.verifyStoredOTP(phonenumber, otp);
             res.json({
                 success: true,
                 message: result.message,
@@ -137,9 +162,9 @@ console.log("results from service ,", result);
 
     async login(req, res) {
         try {
-            const { email, password } = req.body;
+            const { phonenumber, password } = req.body;
             
-            const result = await userService.loginUser(email, password, {
+            const result = await userService.loginUser(phonenumber, password, {
                 userAgent: req.headers['user-agent'],
                 ipAddress: req.ip
             });
@@ -340,9 +365,9 @@ console.log("results from service ,", result);
     // Password Reset
     async forgotPassword(req, res) {
         try {
-            const { email } = req.body;
+            const { phonenumber } = req.body;
             
-            const result = await userService.requestPasswordReset(email);
+            const result = await userService.requestPasswordReset(phonenumber);
             
             res.json({
                 success: true,
@@ -359,8 +384,8 @@ console.log("results from service ,", result);
 
     async resetPassword(req, res) {
         try {
-            const { token, email, newPassword } = req.body;
-            const user = await userModel.findUserByEmail(email);
+            const { token, phonenumber, newPassword } = req.body;
+            const user = await userModel.findUserByphonenumber(phonenumber);
             const userId = user.id
             console.log(`==in cotroller ::=user id : ${userId} ==== token : ${token} ==== new password ${newPassword}`);
            

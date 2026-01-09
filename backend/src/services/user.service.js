@@ -68,13 +68,13 @@ console.log("==== sending OTP to phone number =====");
     }
 
     // Send OTP to phone
-    async sendOTP(phoneNumber) {
+    async sendOTP(phonenumber) {
         try {
-            console.log("==== sending OTP to phone number =====", phoneNumber);
+            console.log("==== sending OTP to phone number =====", phonenumber);
             // Check if user exists
-            const user = await UserModel.findUserByPhone(phoneNumber);
+            const user = await UserModel.findUserByPhone(phonenumber);
             if (!user) {
-                console.log("user not found for phone number ", phoneNumber);
+                console.log("user not found for phone number ", phonenumber);
                 throw new Error('User not found');
             }
 console.log("user found for phone number ", user.id);
@@ -84,11 +84,40 @@ console.log("user found for phone number ", user.id);
             await UserModel.storeOTP(user.id, otp);
             console.log('stored OTP for user', user.id);
             // Send OTP via SMS using Twilio Verify
-            await smsService.sendOTP(phoneNumber);
+             const smsres = await smsService.sendOTPSMS(phonenumber, otp);
+console.log("Sent OTP to phone number via Twilio Verify", smsres);
+            return {
+                success: true,
+                message: `OTP sent to your phone ${phonenumber}`
+            };
+        } catch (error) {
+            throw new Error(`Failed to send OTP: ${error.message}`);
+        }
+    }
+
+
+      // Send OTP to phone
+    async resendOTP(phonenumber) {
+        try {
+            console.log("==== RE == sending OTP to phone number =====", phonenumber);
+            // Check if user exists
+            const user = await UserModel.findUserByPhone(phonenumber);
+            if (!user) {
+                console.log("user not found for phone number ", phonenumber);
+                throw new Error('User not found');
+            }
+console.log("user found for phone number ", user.id);
+            // Generate and store OTP (fallback - Twilio will generate its own)
+            const otp = this.generateOTP();
+            console.log("generated OTP is ", otp);
+            await UserModel.storeOTP(user.id, otp);
+            console.log('stored OTP for user', user.id);
+            // Send OTP via SMS using Twilio Verify
+            await smsService.sendOTP(phonenumber);
 console.log("Sent OTP to phone number via Twilio Verify");
             return {
                 success: true,
-                message: `OTP sent to your phone ${phoneNumber}`
+                message: `OTP sent to your phone ${phonenumber}`
             };
         } catch (error) {
             throw new Error(`Failed to send OTP: ${error.message}`);
@@ -96,18 +125,23 @@ console.log("Sent OTP to phone number via Twilio Verify");
     }
 
     // Verify OTP and activate account using Twilio Verify
-    async verifyOTP(phoneNumber, otp) {
+    async verifyOTP(phonenumber, otp) {
         try {
+            console.log("==== verifying OTP for phone number =====", phonenumber);
+            console.log("=== otp sent to be veified ::", otp)
             // Find user by phone
-            const user = await UserModel.findUserByPhone(phoneNumber);
+            const user = await UserModel.findUserByPhone(phonenumber);
+
+            console.log("===user found for phone number ::", user);
             if (!user) {
+                console.log("failled to found the user")
                 throw new Error('User not found');
             }
             
-            console.log("user id in verify OTP : phoneNumber, : otp", user.id, phoneNumber, otp);
+            console.log("user id in verify OTP : phonenumber, : otp", user.id, phonenumber, otp);
 
             // Verify OTP using Twilio Verify service
-            const verificationResult = await smsService.verifyOTP(phoneNumber, otp);
+            const verificationResult = await smsService.verifyOTP(phonenumber, otp);
             
             if (!verificationResult.success) {
                 throw new Error('Invalid or expired OTP');
@@ -127,7 +161,7 @@ console.log("Sent OTP to phone number via Twilio Verify");
                 message: 'Phone verified successfully. Account activated.',
                 user: {
                     id: updatedUser.id,
-                    phone_number: updatedUser.phone_number,
+                    phonenumber: updatedUser.phone_number,
                     username: updatedUser.username
                 }
             };
@@ -137,28 +171,35 @@ console.log("Sent OTP to phone number via Twilio Verify");
     }
 
     // Alternative OTP verification (using stored OTP in database - fallback)
-    async verifyStoredOTP(phoneNumber, otp) {
+    async verifyStoredOTP(phonenumber, otp) {
         try {
-            const user = await UserModel.findUserByPhone(phoneNumber);
+            console.log("==== verifying STORED OTP for phone number =====", phonenumber);
+            const user = await UserModel.findUserByPhone(phonenumber);
+            console.log("===user found for phone number ::", user);
             if (!user) {
+                console.log("failled to found the user")
                 throw new Error('User not found');
             }
 
+            console.log("user id in verify STORED OTP : phonenumber, : otp", user.id, phonenumber, otp);
             // Validate OTP from database
             const isValid = await UserModel.validateOTP(user.id, otp);
+            console.log("is OTP valid ::", isValid);
             if (!isValid) {
+                console.log("OTP is invalid or expired ");
                 throw new Error('Invalid or expired OTP');
             }
-
+console.log("OTP is valid ");
             // Clear used OTP
-            await UserModel.clearOTP(user.id);
+           const clearOTPresuts = await UserModel.clearOTP(user.id);
+console.log("cleared OTP results ::", clearOTPresuts);
 
             // Activate user account
-            await UserModel.updateUser(user.id, { is_active: 1 });
-
+           const updateUserResults = await UserModel.updateUser(user.id, { is_active: 1 });
+console.log("Results form update user ", updateUserResults);
             // Get updated user
             const updatedUser = await UserModel.findUserById(user.id);
-
+console.log("=== Updated user ===", updatedUser);
             return {
                 success: true,
                 message: 'Phone verified successfully. Account activated.',
@@ -414,7 +455,7 @@ console.log("Sent OTP to phone number via Twilio Verify");
                 success: true,
                 message: `Password reset instructions sent`,
                 resetToken: resetToken,
-                phoneNumber: user.phone_number
+                phonenumber: user.phone_number
             };
         } catch (error) {
             throw new Error(`Password reset request failed: ${error.message}`);
@@ -549,15 +590,15 @@ console.log("Sent OTP to phone number via Twilio Verify");
     }
 
     // New method: Send OTP for phone verification
-    async sendPhoneVerificationOTP(phoneNumber) {
+    async sendPhoneVerificationOTP(phonenumber) {
         try {
-            const user = await UserModel.findUserByPhone(phoneNumber);
+            const user = await UserModel.findUserByPhone(phonenumber);
             if (!user) {
                 throw new Error('User not found');
             }
 
             // Send OTP using Twilio Verify
-            await smsService.sendOTP(phoneNumber);
+            await smsService.sendOTP(phonenumber);
 
             return {
                 success: true,
@@ -569,15 +610,15 @@ console.log("Sent OTP to phone number via Twilio Verify");
     }
 
     // New method: Verify phone with Twilio Verify
-    async verifyPhoneNumber(phoneNumber, otp) {
+    async verifyPhoneNumber(phonenumber, otp) {
         try {
-            const user = await UserModel.findUserByPhone(phoneNumber);
+            const user = await UserModel.findUserByPhone(phonenumber);
             if (!user) {
                 throw new Error('User not found');
             }
 
             // Verify using Twilio
-            const verificationResult = await smsService.verifyOTP(phoneNumber, otp);
+            const verificationResult = await smsService.verifyOTP(phonenumber, otp);
             
             if (!verificationResult.success) {
                 throw new Error('Invalid or expired OTP');
@@ -596,20 +637,20 @@ console.log("Sent OTP to phone number via Twilio Verify");
     }
 
     // New method: Update phone number with verification
-    async updatePhoneNumber(userId, newPhoneNumber) {
+    async updatePhoneNumber(userId, newphonenumber) {
         try {
             // Check if phone number is already in use
-            const phoneExists = await UserModel.checkPhoneNumberExists(newPhoneNumber);
+            const phoneExists = await UserModel.checkPhoneNumberExists(newphonenumber);
             if (phoneExists) {
                 throw new Error('Phone number already in use');
             }
 
             // Send OTP to new phone number
-            await smsService.sendOTP(newPhoneNumber);
+            await smsService.sendOTP(newphonenumber);
 
             // Store pending phone update
             const otp = this.generateOTP();
-            await UserModel.storePendingPhoneUpdate(userId, newPhoneNumber, otp);
+            await UserModel.storePendingPhoneUpdate(userId, newphonenumber, otp);
 
             return {
                 success: true,
