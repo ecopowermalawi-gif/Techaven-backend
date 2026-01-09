@@ -7,11 +7,14 @@ import pool from '../config/database.js';
 class UserService {
     // Registration
     async registerUser(userData) {
+
+        console.log("hello here is the data in user service", userData.phonenumber);
+            
         try {
-            console.log("hello here is the data in user service", userData);
             
             // Check if user exists
             const phoneExists = await UserModel.checkPhoneNumberExists(userData.phonenumber);
+            console.log("================== here is resuts =================", phoneExists)
             if (phoneExists) {
                 console.log("phone number already existed ", phoneExists);
                 throw new Error('Phone number already in use');

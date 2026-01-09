@@ -166,8 +166,6 @@ export const productValidationRules = {
 // ========== USER VALIDATION RULES ==========
 export const userValidationRules = {
     register: [
-        body('phonenumber')
-            .isString().withMessage('Please provide a valid phone number'),
         body('password')
             .isLength({ min: 6 }).withMessage('Password must be at least 6 characters')
             .matches(/\d/).withMessage('Password must contain a number'),

@@ -630,17 +630,15 @@ class UserModel {
         }
     }
 
-    async checkPhoneNumberExists(phoneNumber, excludeUserId = null) {
+    async checkPhoneNumberExists(phonenumber) {
         try {
+            console.log("======== checking phone number in user model ===========", phonenumber);
             let query = 'SELECT COUNT(*) as count FROM auth_users WHERE phone_number = ?';
-            const params = [phoneNumber];
+            const params = [phonenumber];
+ const [result] = await pool.query(query, params);
 
-            if (excludeUserId) {
-                query += ' AND id != ?';
-                params.push(excludeUserId);
-            }
-
-            const [result] = await pool.query(query, params);
+ console.log("======== results of phone number check ===========", result);
+ 
             return result[0].count > 0;
         } catch (error) {
             throw new Error(`Failed to check phone number: ${error.message}`);

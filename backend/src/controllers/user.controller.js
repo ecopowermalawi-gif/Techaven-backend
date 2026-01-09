@@ -7,12 +7,11 @@ class UserController {
         try {
             const { phonenumber, password, username,  role = 'buyer', business_name } = req.body;
             console.log("===in user controller : registering user ====");
-            console.log(`Received data: phone_number=${phonenumber}, username=${username}, role=${role}, business_name=${business_name}`);   
+            console.log(`Received data: phonenumber=${phonenumber}, username=${username}, role=${role}, business_name=${business_name}`);   
             const result = await userService.registerUser({
                 phonenumber,
                 password,
                 username,
-               
                 role,
                 business_name
             });
