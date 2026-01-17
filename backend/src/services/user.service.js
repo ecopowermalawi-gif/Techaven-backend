@@ -88,7 +88,7 @@ console.log("user found for phone number ", user.id);
 console.log("Sent OTP to phone number via Twilio Verify", smsres);
             return {
                 success: true,
-                message: `OTP sent to your phone ${phonenumber}`
+                message: `OTP sent ${otp} to your phone ${phonenumber}`
             };
         } catch (error) {
             throw new Error(`Failed to send OTP: ${error.message}`);

@@ -10,7 +10,7 @@ const router = express.Router();
 
 // Get all shops
 router.get(
-    '/',
+    '/shops',
     paginationRules,
     cacheMiddleware(300),
     shopController.getShops

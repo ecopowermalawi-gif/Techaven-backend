@@ -44,7 +44,7 @@ class UserModel {
             if (userData.role === 'seller') {
                 await connection.query(
                     'INSERT INTO catalog_sellers (id, user_id, business_name) VALUES (?, ?, ?)',
-                    [uuidv4(), userId, userData.business_name || null]
+                    [uuidv4(), userId, userData.business_name || "Techaven"]
                 );
             }
 

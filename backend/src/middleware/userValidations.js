@@ -125,9 +125,8 @@ export const userValidationRules = {
     ],
 
     login: [
-        body('email')
-            .isEmail().withMessage('Invalid email address')
-            .normalizeEmail(),
+        body('phonenumber')
+            .notEmpty().withMessage('Invalid phone number'),
         body('password')
             .notEmpty().withMessage('Password is required'),
         validateRequest

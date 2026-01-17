@@ -149,7 +149,10 @@ try {
     const id = uuidv4();
 const results = await db.query(`INSERT INTO
      catalog_product_images(id, product_id, url,alt_text, sort_order) VALUES(?,?,?,?,?)`, [id, productImageData.product_id, productImageData.url, productImageData.alt_text, productImageData.sort_order]);
-    } catch (error) {
+
+   console.log("'Results from catalog produt images ", results);
+
+} catch (error) {
     console.log("prooduct images  insertion error ", error );
 }
         await pool.query(
@@ -161,16 +164,21 @@ const results = await db.query(`INSERT INTO
     }
 
     static async  updateProduct(product_id, url,alt_text){
-        const id =
-        await pool.query(`INSERT INTO catalog_product_images()`);
+        const id = await pool.query(`INSERT INTO catalog_product_images()`);
+        console.log("Id results ::", id);
+
     }
     static async delete(id) {
-        await pool.query('DELETE FROM products WHERE id = ?', [id]);
+        const delProd =  await pool.query('DELETE FROM products WHERE id = ?', [id]);
+       console.log("Delete the user with id :: ", delProd);
+
         return true;
     }
 
     static async updateStock(productId, quantity, type = 'increment') {
         const operation = type === 'increment' ? '+' : '-';
+
+        console.log("operation :;:", operation);
            try {
             const [result] = await pool.query(`
                 UPDATE catalog_products 
@@ -181,10 +189,10 @@ const results = await db.query(`INSERT INTO
 
             return result.affectedRows > 0;
         } catch (error) {
+            console.log("Error update :=", error);
             throw new Error('Error updating product stock');
         }
     }
-    
 
     static async findByCategory(categoryId, { page = 1, limit = 10 }) {
         const offset = (page - 1) * limit;
@@ -227,7 +235,7 @@ const results = await db.query(`INSERT INTO
             [sellerId, limit, offset]
         );
 
-        const [{ total }] = await pool.query(
+        const [total ] = await pool.query(
             'SELECT COUNT(*) as total FROM products WHERE seller_id = ?',
             [sellerId]
         );

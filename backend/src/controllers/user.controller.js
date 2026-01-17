@@ -3,9 +3,10 @@ import userService from '../services/user.service.js';
 
 class UserController {
     // Authentication
-    async register(req, res) {
+    // registration for user ( buyer, seller ())
+        async register(req, res) {
         try {
-            const { phonenumber, password, username,  role = 'buyer', business_name } = req.body;
+            const { phonenumber, password, username,  role = 'buyer', business_name= 'Techaven' } = req.body;
             console.log("===in user controller : registering user ====");
             console.log(`Received data: phonenumber=${phonenumber}, username=${username}, role=${role}, business_name=${business_name}`);   
             const result = await userService.registerUser({

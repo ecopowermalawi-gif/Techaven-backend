@@ -82,7 +82,7 @@ router.post(
 
 // Create product (seller/admin only)
 router.post(
-    '/',
+    '/add',
     auth,
     checkRole(['seller', 'admin']),
     uploadSingleFile('image'),

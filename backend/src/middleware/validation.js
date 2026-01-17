@@ -183,9 +183,8 @@ export const userValidationRules = {
     ],
     
     login: [
-        body('email')
-            .isEmail().withMessage('Please provide a valid email')
-            .normalizeEmail(),
+        body('phonenumber')
+            .notEmpty().withMessage('Please provide a valid phone number'),
         body('password')
             .notEmpty().withMessage('Password is required')
     ],
